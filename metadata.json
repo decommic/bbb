@@ -1,0 +1,7 @@
+{
+  "name": "Copy of App mới chỉ dùng chỉnh ảnh",
+  "description": "",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

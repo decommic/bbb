@@ -1,0 +1,107 @@
+{
+  "enableImageMetadata": false,
+  "home": {
+    "mainTitleKey": "home_mainTitle",
+    "subtitleKey": "home_subtitle",
+    "useSmartTitleWrapping": false,
+    "smartTitleWrapWords": 2
+  },
+  "apps": [
+    {
+      "id": "ai-upscaler",
+      "titleKey": "app_ai-upscaler_title",
+      "descriptionKey": "app_ai-upscaler_description",
+      "icon": "🔎+"
+    },
+    {
+      "id": "dress-the-model",
+      "titleKey": "app_dress-the-model_title",
+      "descriptionKey": "app_dress-the-model_description",
+      "icon": "👗"
+    },
+    {
+      "id": "replace-product-in-scene",
+      "titleKey": "app_replace-product-in-scene_title",
+      "descriptionKey": "app_replace-product-in-scene_description",
+      "icon": "🖼️"
+    },
+    {
+      "id": "image-interpolation",
+      "titleKey": "app_image-interpolation_title",
+      "descriptionKey": "app_image-interpolation_description",
+      "icon": "⚗️"
+    },
+    {
+      "id": "mix-style",
+      "titleKey": "app_mix-style_title",
+      "descriptionKey": "app_mix-style_description",
+      "icon": "🎭"
+    },
+    {
+      "id": "free-generation",
+      "titleKey": "app_free-generation_title",
+      "descriptionKey": "app_free-generation_description",
+      "icon": "🚀"
+    }
+  ],
+  "dressTheModel": {
+    "mainTitleKey": "dressTheModel_mainTitle",
+    "subtitleKey": "dressTheModel_subtitle",
+    "useSmartTitleWrapping": true,
+    "smartTitleWrapWords": 2,
+    "uploaderCaptionModelKey": "dressTheModel_uploaderCaptionModel",
+    "uploaderDescriptionModelKey": "dressTheModel_uploaderDescriptionModel",
+    "uploaderCaptionClothingKey": "dressTheModel_uploaderCaptionClothing",
+    "uploaderDescriptionClothingKey": "dressTheModel_uploaderDescriptionClothing"
+  },
+  "replaceProductInScene": {
+    "mainTitleKey": "replaceProductInScene_mainTitle",
+    "subtitleKey": "replaceProductInScene_subtitle",
+    "useSmartTitleWrapping": true,
+    "smartTitleWrapWords": 3,
+    "uploaderCaptionProductKey": "replaceProductInScene_uploaderCaptionProduct",
+    "uploaderDescriptionProductKey": "replaceProductInScene_uploaderDescriptionProduct",
+    "uploaderCaptionSceneKey": "replaceProductInScene_uploaderCaptionScene",
+    "uploaderDescriptionSceneKey": "replaceProductInScene_uploaderDescriptionScene"
+  },
+  "mixStyle": {
+    "mainTitleKey": "mixStyle_mainTitle",
+    "subtitleKey": "mixStyle_subtitle",
+    "useSmartTitleWrapping": true,
+    "smartTitleWrapWords": 3,
+    "uploaderCaptionContentKey": "mixStyle_uploaderCaptionContent",
+    "uploaderDescriptionContentKey": "mixStyle_uploaderDescriptionContent",
+    "uploaderCaptionStyleKey": "mixStyle_uploaderCaptionStyle",
+    "uploaderDescriptionStyleKey": "mixStyle_uploaderDescriptionStyle"
+  },
+  "freeGeneration": {
+    "mainTitleKey": "freeGeneration_mainTitle",
+    "subtitleKey": "freeGeneration_subtitle",
+    "useSmartTitleWrapping": true,
+    "smartTitleWrapWords": 2,
+    "uploaderCaption1Key": "freeGeneration_uploaderCaption1",
+    "uploaderDescription1Key": "freeGeneration_uploaderDescription1",
+    "uploaderCaption2Key": "freeGeneration_uploaderCaption2",
+    "uploaderDescription2Key": "freeGeneration_uploaderDescription2"
+  },
+  "imageInterpolation": {
+    "mainTitleKey": "imageInterpolation_mainTitle",
+    "subtitleKey": "imageInterpolation_subtitle",
+    "useSmartTitleWrapping": true,
+    "smartTitleWrapWords": 3,
+    "uploaderCaptionInputKey": "imageInterpolation_uploaderCaptionInput",
+    "uploaderDescriptionInputKey": "imageInterpolation_uploaderDescriptionInput",
+    "uploaderCaptionOutputKey": "imageInterpolation_uploaderCaptionOutput",
+    "uploaderDescriptionOutputKey": "imageInterpolation_uploaderDescriptionOutput",
+    "uploaderCaptionReferenceKey": "imageInterpolation_uploaderCaptionReference",
+    "uploaderDescriptionReferenceKey": "imageInterpolation_uploaderDescriptionReference"
+  },
+  "aiUpscaler": {
+    "mainTitleKey": "aiUpscaler_mainTitle",
+    "subtitleKey": "aiUpscaler_subtitle",
+    "useSmartTitleWrapping": true,
+    "smartTitleWrapWords": 3,
+    "uploaderCaptionKey": "aiUpscaler_uploaderCaption",
+    "uploaderDescriptionKey": "aiUpscaler_uploaderDescription"
+  }
+}

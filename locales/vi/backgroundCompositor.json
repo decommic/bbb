@@ -1,0 +1,18 @@
+{
+  "productStudio_mainTitle": "Studio Sản Phẩm",
+  "productStudio_subtitle": "Tải ảnh sản phẩm và bối cảnh để bắt đầu",
+  "productStudio_uploaderCaptionProduct": "Tải ảnh sản phẩm",
+  "productStudio_uploaderDescriptionProduct": "Ảnh đã tách nền cho kết quả tốt nhất",
+  "productStudio_uploaderCaptionScene": "Tải ảnh bối cảnh",
+  "productStudio_uploaderDescriptionScene": "Bối cảnh bạn muốn đặt sản phẩm vào",
+  "productStudio_productCaption": "Sản phẩm",
+  "productStudio_sceneCaption": "Bối cảnh",
+  "productStudio_creativityLabel": "Mức độ Sáng tạo",
+  "productStudio_creativityLevels": [
+    "Giữ nguyên nền",
+    "Thay đổi nhẹ",
+    "Sáng tạo"
+  ],
+  "productStudio_notesPlaceholder": "Ví dụ: đặt sản phẩm ở góc phải, thêm hiệu ứng bóng đổ mềm...",
+  "productStudio_createButton": "Tạo Ảnh"
+}

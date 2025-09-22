@@ -1,0 +1,13 @@
+{
+  "nanoBananaEditor_mainTitle": "Chỉnh sửa ảnh Nano Banana",
+  "nanoBananaEditor_subtitle": "Sức mạnh chỉnh sửa ảnh bằng AI",
+  "nanoBananaEditor_uploaderCaption": "Tải ảnh cần sửa",
+  "nanoBananaEditor_uploaderDescription": "Tải lên một ảnh và mô tả những thay đổi bạn muốn",
+  "nanoBananaEditor_promptLabel": "Yêu cầu chỉnh sửa",
+  "nanoBananaEditor_promptPlaceholder": "Ví dụ: thêm một chiếc mũ cao bồi cho con mèo, đổi nền thành bãi biển...",
+  "nanoBananaEditor_createButton": "Chỉnh sửa",
+  "nanoBananaEditor_creating": "Đang chỉnh sửa...",
+  "nanoBananaEditor_resultCaption": "Ảnh đã sửa",
+  "nanoBananaEditor_textResultTitle": "Phản hồi từ AI",
+  "nanoBananaEditor_regenDescription": "Mô tả lại những thay đổi bạn muốn"
+}

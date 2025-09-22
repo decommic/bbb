@@ -1,0 +1,16 @@
+{
+    "aiUpscaler_mainTitle": "AI Image Upscaler",
+    "aiUpscaler_subtitle": "Increase the resolution and detail of your images",
+    "aiUpscaler_uploaderCaption": "Upload image to upscale",
+    "aiUpscaler_uploaderDescription": "Click the frame to upload an image you want to sharpen and enhance",
+    "aiUpscaler_optionsTitle": "Upscale Options",
+    "aiUpscaler_upscaleFactorLabel": "Upscale Factor",
+    "aiUpscaler_enhancementLevelLabel": "Detail Enhancement Level",
+    "aiUpscaler_enhancementLevels": ["Natural", "Enhanced", "Maximum"],
+    "aiUpscaler_notesPlaceholder": "e.g., preserve wood grain texture, enhance eye details...",
+    "aiUpscaler_creating": "Upscaling...",
+    "aiUpscaler_createButton": "Upscale Image",
+    "aiUpscaler_resultCaption": "Upscaled Image",
+    "aiUpscaler_regenDescription": "Add notes to improve the upscaled image",
+    "aiUpscaler_regenPlaceholder": "e.g., make the hair look softer..."
+}

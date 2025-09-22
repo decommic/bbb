@@ -1,0 +1,13 @@
+{
+  "nanoBananaEditor_mainTitle": "Nano Banana Image Editor",
+  "nanoBananaEditor_subtitle": "AI-powered image editing",
+  "nanoBananaEditor_uploaderCaption": "Upload image to edit",
+  "nanoBananaEditor_uploaderDescription": "Upload an image and describe the changes you want to make",
+  "nanoBananaEditor_promptLabel": "Editing Prompt",
+  "nanoBananaEditor_promptPlaceholder": "e.g., add a cowboy hat to the cat, change the background to a beach...",
+  "nanoBananaEditor_createButton": "Edit Image",
+  "nanoBananaEditor_creating": "Editing...",
+  "nanoBananaEditor_resultCaption": "Edited Image",
+  "nanoBananaEditor_textResultTitle": "Response from AI",
+  "nanoBananaEditor_regenDescription": "Describe the changes you want again"
+}

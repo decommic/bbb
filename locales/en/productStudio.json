@@ -1,0 +1,19 @@
+{
+  "productStudio_mainTitle": "Product Studio",
+  "productStudio_subtitle": "Upload a product photo and a scene to start",
+  "productStudio_uploaderCaptionProduct": "Upload product photo",
+  "productStudio_uploaderDescriptionProduct": "Image with removed background works best",
+  "productStudio_uploaderCaptionScene": "Upload scene photo",
+  "productStudio_uploaderDescriptionScene": "The scene to place your product in",
+  "productStudio_productCaption": "Product",
+  "productStudio_sceneCaption": "Scene",
+  "productStudio_creativityLabel": "Layout & Creativity Options",
+  "productStudio_promptLabel": "Detailed Request (Prompt)",
+  "productStudio_creativityLevels": [
+    "Realistic Composite (Keep Scene)",
+    "Blend (Slight Change)",
+    "Create New Scene (Creative)"
+  ],
+  "productStudio_notesPlaceholder": "e.g., place the product in the right corner, add a soft shadow effect...",
+  "productStudio_createButton": "Generate Image"
+}

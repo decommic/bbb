@@ -1,0 +1,18 @@
+{
+  "replaceProductInScene_mainTitle": "Thay Sản Phẩm Vào Bối Cảnh",
+  "replaceProductInScene_subtitle": "Tải ảnh sản phẩm và bối cảnh để bắt đầu",
+  "replaceProductInScene_uploaderCaptionProduct": "Tải ảnh sản phẩm",
+  "replaceProductInScene_uploaderDescriptionProduct": "Ảnh gốc chứa sản phẩm. AI sẽ tự động tách nền.",
+  "replaceProductInScene_uploaderCaptionScene": "Tải ảnh bối cảnh",
+  "replaceProductInScene_uploaderDescriptionScene": "AI sẽ tự động dọn dẹp và đặt sản phẩm vào.",
+  "replaceProductInScene_modelCaption": "Sản phẩm",
+  "replaceProductInScene_clothingCaption": "Bối cảnh",
+  "replaceProductInScene_layoutLabel": "Bố cục",
+  "replaceProductInScene_layoutOptions": ["Tự động", "Trải sàn", "Treo trên móc", "Có tay người cầm"],
+  "replaceProductInScene_photoStyleLabel": "Phong cách ảnh & Bối cảnh",
+  "replaceProductInScene_photoStyleOptions": ["Tự động", "Giống 100% ảnh bối cảnh", "Hòa trộn (giống 80%)", "Sáng tạo (Tự động chỉnh)"],
+  "replaceProductInScene_notesPlaceholder": "Ví dụ: thêm hiệu ứng đổ bóng, ánh sáng ban đêm...",
+  "replaceProductInScene_creating": "Đang ghép ảnh...",
+  "replaceProductInScene_createButton": "Ghép ảnh",
+  "replaceProductInScene_regenPlaceholder": "Ví dụ: đổi góc nhìn, làm sản phẩm to hơn..."
+}

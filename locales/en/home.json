@@ -1,0 +1,16 @@
+{
+  "home_mainTitle": "Like Kids",
+  "home_subtitle": "Confidence - Shine",
+  "app_ai-upscaler_title": "AI Image Upscaler",
+  "app_ai-upscaler_description": "Increase the resolution and enhance the details of your images with AI.",
+  "app_free-generation_title": "Free Generation",
+  "app_free-generation_description": "Create new images from text or edit uploaded photos with your own prompts.",
+  "app_image-interpolation_title": "Image Interpolation",
+  "app_image-interpolation_description": "Analyze an image pair to create a prompt, then apply that prompt to a reference image.",
+  "app_dress-the-model_title": "Dress The Model",
+  "app_dress-the-model_description": "Try new outfits on a model from your photo, keeping their face and figure.",
+  "app_replace-product-in-scene_title": "Place Product in Scene",
+  "app_replace-product-in-scene_description": "Automatically remove the product's background and intelligently place it into a new scene.",
+  "app_mix-style_title": "Mix Image Styles",
+  "app_mix-style_description": "Combine the content of one photo with the artistic style of another."
+}

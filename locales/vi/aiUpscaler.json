@@ -1,0 +1,16 @@
+{
+    "aiUpscaler_mainTitle": "AI Nâng Cấp Ảnh",
+    "aiUpscaler_subtitle": "Tăng độ phân giải và chi tiết cho ảnh của bạn",
+    "aiUpscaler_uploaderCaption": "Tải ảnh cần nâng cấp",
+    "aiUpscaler_uploaderDescription": "Nhấn vào khung ảnh để tải lên ảnh bạn muốn làm nét và tăng độ phân giải",
+    "aiUpscaler_optionsTitle": "Tùy chọn Nâng cấp",
+    "aiUpscaler_upscaleFactorLabel": "Hệ số nâng cấp",
+    "aiUpscaler_enhancementLevelLabel": "Mức độ tăng cường chi tiết",
+    "aiUpscaler_enhancementLevels": ["Tự nhiên", "Tăng cường", "Tối đa"],
+    "aiUpscaler_notesPlaceholder": "Ví dụ: giữ lại kết cấu vân gỗ, làm nổi bật chi tiết mắt...",
+    "aiUpscaler_creating": "Đang nâng cấp...",
+    "aiUpscaler_createButton": "Nâng cấp ảnh",
+    "aiUpscaler_resultCaption": "Ảnh đã nâng cấp",
+    "aiUpscaler_regenDescription": "Thêm ghi chú để cải thiện ảnh đã nâng cấp",
+    "aiUpscaler_regenPlaceholder": "Ví dụ: làm cho tóc trông mềm mại hơn..."
+}

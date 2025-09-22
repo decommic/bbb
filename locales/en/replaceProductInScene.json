@@ -1,0 +1,18 @@
+{
+  "replaceProductInScene_mainTitle": "Place Product in Scene",
+  "replaceProductInScene_subtitle": "Upload a product and scene photo to start",
+  "replaceProductInScene_uploaderCaptionProduct": "Upload Product Photo",
+  "replaceProductInScene_uploaderDescriptionProduct": "Original photo with the product. AI will auto-remove the background.",
+  "replaceProductInScene_uploaderCaptionScene": "Upload Scene Photo",
+  "replaceProductInScene_uploaderDescriptionScene": "AI will auto-clean the scene and place the product.",
+  "replaceProductInScene_modelCaption": "Product",
+  "replaceProductInScene_clothingCaption": "Scene",
+  "replaceProductInScene_layoutLabel": "Layout",
+  "replaceProductInScene_layoutOptions": ["Auto", "Flat Lay", "Hanging", "Hand-held"],
+  "replaceProductInScene_photoStyleLabel": "Photo & Scene Style",
+  "replaceProductInScene_photoStyleOptions": ["Match Scene 100%", "Blend (80% Match)", "Creative (Auto-adjust)", "Auto"],
+  "replaceProductInScene_notesPlaceholder": "e.g., add a shadow effect, night lighting...",
+  "replaceProductInScene_creating": "Compositing...",
+  "replaceProductInScene_createButton": "Composite Image",
+  "replaceProductInScene_regenPlaceholder": "e.g., change the perspective, make the product larger..."
+}
