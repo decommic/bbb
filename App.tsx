@@ -24,17 +24,17 @@ import {
     BeforeAfterModal,
     LayerComposerModal,
     useAuth,
-    AppConfig
+    AppConfig,
+    PatternDesignerState
 } from './components/uiUtils';
 import { LoadingSpinnerIcon } from './components/icons';
 
 // Lazy load app components for code splitting
 const DressTheModel = lazy(() => import('./components/DressTheModel'));
 const ReplaceProductInScene = lazy(() => import('./components/ReplaceProductInScene'));
-const MixStyle = lazy(() => import('./components/MixStyle'));
 const FreeGeneration = lazy(() => import('./components/FreeGeneration'));
 const ImageInterpolation = lazy(() => import('./components/ImageInterpolation'));
-const AIUpscaler = lazy(() => import('./components/AIUpscaler'));
+const PatternDesigner = lazy(() => import('./components/PatternDesigner'));
 
 
 const AppLoadingFallback = () => (
@@ -176,24 +176,6 @@ function App() {
                         </motion.div>
                     </Suspense>
                 );
-            case 'mix-style':
-                return (
-                    <Suspense fallback={<AppLoadingFallback />}>
-                        <motion.div key="mix-style" {...motionProps}>
-                            <MixStyle 
-                                {...settings.mixStyle} 
-                                mainTitle={t(settings.mixStyle.mainTitleKey)}
-                                subtitle={t(settings.mixStyle.subtitleKey)}
-                                uploaderCaptionContent={t(settings.mixStyle.uploaderCaptionContentKey)}
-                                uploaderDescriptionContent={t(settings.mixStyle.uploaderDescriptionContentKey)}
-                                uploaderCaptionStyle={t(settings.mixStyle.uploaderCaptionStyleKey)}
-                                uploaderDescriptionStyle={t(settings.mixStyle.uploaderDescriptionStyleKey)}
-                                {...commonProps}
-                                appState={currentView.state} 
-                            />
-                        </motion.div>
-                    </Suspense>
-                );
             case 'image-interpolation':
                  return (
                     <Suspense fallback={<AppLoadingFallback />}>
@@ -214,21 +196,25 @@ function App() {
                         </motion.div>
                     </Suspense>
                  );
-            case 'ai-upscaler':
-                return (
-                   <Suspense fallback={<AppLoadingFallback />}>
-                       <motion.div key="ai-upscaler" {...motionProps}>
-                           <AIUpscaler 
-                               {...settings.aiUpscaler}
-                               mainTitle={t(settings.aiUpscaler.mainTitleKey)}
-                               subtitle={t(settings.aiUpscaler.subtitleKey)}
-                               uploaderCaption={t(settings.aiUpscaler.uploaderCaptionKey)}
-                               uploaderDescription={t(settings.aiUpscaler.uploaderDescriptionKey)}
-                               {...commonProps}
-                               appState={currentView.state} 
-                           />
-                       </motion.div>
-                   </Suspense>
+            case 'pattern-designer':
+                 return (
+                    <Suspense fallback={<AppLoadingFallback />}>
+                        <motion.div key="pattern-designer" {...motionProps}>
+                            <PatternDesigner 
+                                {...settings.patternDesigner}
+                                mainTitle={t(settings.patternDesigner.mainTitleKey)}
+                                subtitle={t(settings.patternDesigner.subtitleKey)}
+                                uploaderCaptionClothing={t(settings.patternDesigner.uploaderCaptionClothingKey)}
+                                uploaderDescriptionClothing={t(settings.patternDesigner.uploaderDescriptionClothingKey)}
+                                uploaderCaptionPattern1={t(settings.patternDesigner.uploaderCaptionPattern1Key)}
+                                uploaderDescriptionPattern1={t(settings.patternDesigner.uploaderDescriptionPattern1Key)}
+                                uploaderCaptionPattern2={t(settings.patternDesigner.uploaderCaptionPattern2Key)}
+                                uploaderDescriptionPattern2={t(settings.patternDesigner.uploaderDescriptionPattern2Key)}
+                                {...commonProps}
+                                appState={currentView.state as PatternDesignerState} 
+                            />
+                        </motion.div>
+                    </Suspense>
                 );
             default: // Fallback for any invalid view id in history
                  return (

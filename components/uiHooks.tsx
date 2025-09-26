@@ -93,7 +93,8 @@ export const useVideoGeneration = () => {
     }, [addImagesToGallery]);
 
     useEffect(() => {
-        const tasksToPoll = Object.entries(videoTasks).filter(([, task]) => task.status === 'pending' && task.operation);
+        // FIX: Add explicit type annotation to fix property access errors on 'unknown'.
+        const tasksToPoll = Object.entries(videoTasks).filter(([, task]: [string, VideoTask]) => task.status === 'pending' && task.operation);
         if (tasksToPoll.length === 0) return;
     
         let isCancelled = false;
@@ -104,7 +105,8 @@ export const useVideoGeneration = () => {
             const newTasks = { ...videoTasks };
             let tasksUpdated = false;
     
-            await Promise.all(tasksToPoll.map(async ([sourceUrl, task]) => {
+            // FIX: Add explicit type annotation to fix property access errors on 'unknown'.
+            await Promise.all(tasksToPoll.map(async ([sourceUrl, task]: [string, VideoTask]) => {
                 if (!task.operation) return;
                 try {
                     const updatedOp = await pollVideoOperation(task.operation);
@@ -123,7 +125,8 @@ export const useVideoGeneration = () => {
                             throw new Error(updatedOp.error?.message || "Video generation finished but no URI was found.");
                         }
                     } else {
-                        newTasks[sourceUrl] = { ...task, operation: updatedOp };
+                        // FIX: Cast task to VideoTask before spreading to resolve spread type error.
+                        newTasks[sourceUrl] = { ...(task as VideoTask), operation: updatedOp };
                     }
                     tasksUpdated = true;
                 } catch (err) {
@@ -137,7 +140,8 @@ export const useVideoGeneration = () => {
                 setVideoTasks(newTasks);
             }
     
-            const stillPending = Object.values(newTasks).some(t => t.status === 'pending');
+            // FIX: Add explicit type annotation to fix property access errors on 'unknown'.
+            const stillPending = Object.values(newTasks).some((t: VideoTask) => t.status === 'pending');
             if (!isCancelled && stillPending) {
                 setTimeout(poll, 10000);
             }

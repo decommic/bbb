@@ -1,8 +1,6 @@
 {
   "home_mainTitle": "Like Kids",
   "home_subtitle": "Tự Tin - Tỏa Sáng",
-  "app_ai-upscaler_title": "AI Nâng Cấp Ảnh",
-  "app_ai-upscaler_description": "Tăng độ phân giải và cải thiện chi tiết cho hình ảnh của bạn bằng AI.",
   "app_free-generation_title": "Tạo ảnh tự do",
   "app_free-generation_description": "Tạo ảnh mới từ văn bản hoặc chỉnh sửa ảnh tải lên bằng prompt của riêng bạn.",
   "app_image-interpolation_title": "Nội suy hình ảnh",
@@ -11,6 +9,6 @@
   "app_dress-the-model_description": "Thử trang phục mới cho người mẫu từ ảnh của bạn, giữ nguyên khuôn mặt và vóc dáng.",
   "app_replace-product-in-scene_title": "Thay Sản Phẩm Vào Bối Cảnh",
   "app_replace-product-in-scene_description": "Tự động tách nền sản phẩm và ghép vào bối cảnh mới một cách thông minh.",
-  "app_mix-style_title": "Trộn phong cách ảnh",
-  "app_mix-style_description": "Kết hợp nội dung của một ảnh với phong cách nghệ thuật của một ảnh khác."
+  "app_pattern-designer_title": "Thiết kế Họa tiết",
+  "app_pattern-designer_description": "Áp dụng một họa tiết từ một ảnh lên quần áo trong một ảnh khác."
 }

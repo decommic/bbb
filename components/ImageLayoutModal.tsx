@@ -21,7 +21,7 @@ interface SelectedItem {
 }
 
 const ImageLayoutModal: React.FC<ImageLayoutModalProps> = ({ isOpen, onClose }) => {
-    const { sessionGalleryImages, addImagesToGallery, removeImageFromGallery, replaceImageInGallery } = useAppControls();
+    const { sessionGalleryImages, addImagesToGallery, removeImageFromGallery, replaceImageInGallery, t, beforeAfterImages } = useAppControls();
     const { openImageEditor } = useImageEditor();
     const { lightboxIndex, openLightbox, closeLightbox, navigateLightbox } = useLightbox();
     
@@ -153,7 +153,8 @@ const ImageLayoutModal: React.FC<ImageLayoutModalProps> = ({ isOpen, onClose }) 
         const files = e.dataTransfer.files;
         if (!files || files.length === 0) return;
 
-        const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+        // FIX: Add explicit File type to resolve 'type' property error on 'unknown'.
+        const imageFiles = Array.from(files).filter((file: File) => file.type.startsWith('image/'));
         if (imageFiles.length === 0) return;
 
         const readImageAsDataURL = (file: File): Promise<string> => {

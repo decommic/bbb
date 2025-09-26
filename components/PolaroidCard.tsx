@@ -29,9 +29,10 @@ interface PolaroidCardProps {
     caption: string;
     status: ImageStatus;
     error?: string;
-    onShake?: (caption: string) => void;
-    onDownload?: (caption: string) => void;
-    onEdit?: (caption: string) => void;
+    // FIX: Update onShake, onDownload, and onEdit to not expect a 'caption' argument, as the parent component's handler already has the necessary context.
+    onShake?: () => void;
+    onDownload?: () => void;
+    onEdit?: () => void;
     onSwapImage?: () => void;
     onSelectFromGallery?: () => void;
     onCaptureFromWebcam?: () => void;
@@ -132,10 +133,10 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ mediaUrl, caption, status, 
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onEdit(caption);
+                                onEdit();
                             }}
                             className="p-2 bg-black/50 rounded-full text-white hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white"
-                            aria-label={`${t('common_edit')} ${caption}`}
+                            aria-label={t('common_edit')}
                         >
                            <EditorIcon className="h-5 w-5" />
                         </button>
@@ -147,7 +148,7 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ mediaUrl, caption, status, 
                                 onSwapImage();
                             }}
                             className="p-2 bg-black/50 rounded-full text-white hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white"
-                            aria-label={`${t('common_swapImage')} ${caption}`}
+                            aria-label={t('common_swapImage')}
                         >
                             <SwapIcon className="h-5 w-5" strokeWidth={2} />
                         </button>
@@ -186,10 +187,10 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ mediaUrl, caption, status, 
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onShake(caption);
+                                onShake();
                             }}
                             className="p-2 bg-black/50 rounded-full text-white hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white"
-                            aria-label={`${t('common_regenerate')} ${caption}`}
+                            aria-label={t('common_regenerate')}
                         >
                             <RegenerateIcon className="h-5 w-5" />
                         </button>
@@ -198,10 +199,10 @@ const PolaroidCard: React.FC<PolaroidCardProps> = ({ mediaUrl, caption, status, 
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onDownload(caption);
+                                onDownload();
                             }}
                             className="p-2 bg-black/50 rounded-full text-white hover:bg-black/75 focus:outline-none focus:ring-2 focus:ring-white"
-                            aria-label={`${t('common_download')} ${caption}`}
+                            aria-label={t('common_download')}
                         >
                             <DownloadIcon className="h-5 w-5" strokeWidth={2} />
                         </button>

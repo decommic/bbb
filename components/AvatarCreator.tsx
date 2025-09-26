@@ -251,7 +251,7 @@ const AvatarCreator: React.FC<AvatarCreatorProps> = (props) => {
         return t('avatarCreator_createButton');
     };
     
-    // FIX: Add type assertion to resolve 'status' property error on type 'unknown'.
+    // FIX: Add explicit type annotation to resolve 'status' property error on type 'unknown'.
     const hasPartialError = appState.stage === 'results' && Object.values(appState.generatedImages).some((img: { status: string }) => img.status === 'error');
     const isLoading = appState.stage === 'generating';
 

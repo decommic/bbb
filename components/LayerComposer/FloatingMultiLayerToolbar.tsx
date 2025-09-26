@@ -75,6 +75,7 @@ export const FloatingMultiLayerToolbar: React.FC<FloatingMultiLayerToolbarProps>
             className="flex items-center gap-1 p-1.5 rounded-lg bg-neutral-900/60 backdrop-blur-sm border border-white/10 shadow-lg"
             onPointerDown={e => e.stopPropagation()}
         >
+            {/* FIX: Replaced inline SVGs with imported icon components */}
             <ToolButton label="Căn lề trái" onClick={() => onAction('align-left')}>
                 <AlignLeftIcon className="h-5 w-5" />
             </ToolButton>

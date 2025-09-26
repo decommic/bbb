@@ -321,6 +321,7 @@ const PhotoRestoration: React.FC<PhotoRestorationProps> = (props) => {
                 <ResultsView
                     stage={appState.stage}
                     originalImage={appState.uploadedImage}
+                    generatedImage={appState.generatedImage}
                     onOriginalClick={() => openLightbox(0)}
                     error={appState.error}
                     actions={

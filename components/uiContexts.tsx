@@ -5,9 +5,12 @@
 import React, { useState, useEffect, useCallback, useContext, createContext } from 'react';
 import {
     type ImageToEdit, type ViewState, type AnyAppState, type Theme,
-// FIX: Import the Settings type which is now defined in uiTypes.ts.
-    type AppConfig, THEMES, getInitialStateForApp, type Settings
+    type AppConfig, THEMES, getInitialStateForApp, type Settings,
+    type Model,
+    // FIX: Import AppControlContextType to resolve TypeScript errors.
+    type AppControlContextType,
 } from './uiTypes';
+import { idbSet, idbGet } from '../lib/idb';
 
 // --- Auth Context ---
 interface Account {
@@ -181,53 +184,6 @@ export const useImageEditor = (): ImageEditorContextType => {
 
 
 // --- App Control Context ---
-interface AppControlContextType {
-    currentView: ViewState;
-    settings: Settings | null;
-    theme: Theme;
-    sessionGalleryImages: string[];
-    historyIndex: number;
-    viewHistory: ViewState[];
-    isSearchOpen: boolean;
-    isGalleryOpen: boolean;
-    isInfoOpen: boolean;
-    isExtraToolsOpen: boolean;
-    isImageLayoutModalOpen: boolean;
-    isBeforeAfterModalOpen: boolean;
-    isLayerComposerMounted: boolean;
-    isLayerComposerVisible: boolean;
-    language: 'vi' | 'en';
-    addImagesToGallery: (newImages: (string | null | undefined)[]) => void;
-    removeImageFromGallery: (imageIndex: number) => void;
-    replaceImageInGallery: (imageIndex: number, newImageUrl: string) => void;
-    handleThemeChange: (newTheme: Theme) => void;
-    handleLanguageChange: (lang: 'vi' | 'en') => void;
-    navigateTo: (viewId: string) => void;
-    handleStateChange: (newAppState: AnyAppState) => void;
-    handleSelectApp: (appId: string) => void;
-    handleGoHome: () => void;
-    handleGoBack: () => void;
-    handleGoForward: () => void;
-    handleResetApp: () => void;
-    handleOpenSearch: () => void;
-    handleCloseSearch: () => void;
-    handleOpenGallery: () => void;
-    handleCloseGallery: () => void;
-    handleOpenInfo: () => void;
-    handleCloseInfo: () => void;
-    toggleExtraTools: () => void;
-    openImageLayoutModal: () => void;
-    closeImageLayoutModal: () => void;
-    openBeforeAfterModal: () => void;
-    closeBeforeAfterModal: () => void;
-    openLayerComposer: () => void;
-    closeLayerComposer: () => void;
-    hideLayerComposer: () => void;
-    toggleLayerComposer: () => void;
-    importSettingsAndNavigate: (settings: any) => void;
-    t: (key: string, ...args: any[]) => any;
-}
-
 const AppControlContext = createContext<AppControlContextType | undefined>(undefined);
 
 export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -247,6 +203,7 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const [isExtraToolsOpen, setIsExtraToolsOpen] = useState(false);
     const [isImageLayoutModalOpen, setIsImageLayoutModalOpen] = useState(false);
     const [isBeforeAfterModalOpen, setIsBeforeAfterModalOpen] = useState(false);
+    const [beforeAfterImages, setBeforeAfterImages] = useState<[string | null, string | null]>([null, null]);
     const [isLayerComposerMounted, setIsLayerComposerMounted] = useState(false);
     const [isLayerComposerVisible, setIsLayerComposerVisible] = useState(false);
     const [sessionGalleryImages, setSessionGalleryImages] = useState<string[]>([]);
@@ -254,8 +211,96 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     const [language, setLanguage] = useState<'vi' | 'en'>(() => (localStorage.getItem('app-language') as 'vi' | 'en') || 'vi');
     const [translations, setTranslations] = useState<Record<string, any>>({});
+    
+    // State for Model Library and Result History
+    const [modelLibrary, setModelLibrary] = useState<Model[]>([]);
+    const [dressTheModelHistory, setDressTheModelHistory] = useState<string[]>([]);
 
     const currentView = viewHistory[historyIndex];
+
+    // Load model library and history from IndexedDB on startup
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const savedLibrary = await idbGet<Model[] | string[]>('__modelLibrary__');
+                if (savedLibrary) {
+                    // MIGRATION LOGIC: Check if the saved data is the old string array format.
+                    if (savedLibrary.length > 0 && typeof savedLibrary[0] === 'string') {
+                        console.log("Migrating old model library format...");
+                        const migratedLibrary: Model[] = (savedLibrary as string[]).map(url => ({
+                            id: url, // Use URL as unique ID
+                            url,
+                            isFavorite: false,
+                            category: 'default'
+                        }));
+                        setModelLibrary(migratedLibrary);
+                        // Save back the new, structured format
+                        await idbSet('__modelLibrary__', migratedLibrary);
+                    } else {
+                        setModelLibrary(savedLibrary as Model[]);
+                    }
+                }
+
+                const savedDTMHistory = await idbGet<string[]>('__dressTheModelHistory__');
+                if (savedDTMHistory) {
+                    setDressTheModelHistory(savedDTMHistory);
+                }
+            } catch (error) {
+                console.error("Failed to load initial data from storage", error);
+            }
+        };
+        loadData();
+    }, []);
+
+    // Save model library to IndexedDB when it changes
+    useEffect(() => {
+        if (modelLibrary) { // Save even if empty to allow clearing the library
+             try {
+                idbSet('__modelLibrary__', modelLibrary);
+            } catch (error) {
+                console.error("Failed to save model library to IndexedDB", error);
+            }
+        }
+    }, [modelLibrary]);
+
+    const addModelToLibrary = useCallback((imageDataUrl: string) => {
+        setModelLibrary(prev => {
+            if (prev.some(m => m.url === imageDataUrl)) return prev;
+
+            const newModel: Model = { id: imageDataUrl, url: imageDataUrl, isFavorite: false, category: 'default' };
+            let newLibrary = [newModel, ...prev];
+            
+            // Pruning logic: keep all favorites + 20 most recent non-favorites
+            const favorites = newLibrary.filter(m => m.isFavorite);
+            const nonFavorites = newLibrary.filter(m => !m.isFavorite);
+            const prunedNonFavorites = nonFavorites.slice(0, 20);
+            
+            return [...favorites, ...prunedNonFavorites];
+        });
+    }, []);
+    
+    const updateModelInLibrary = useCallback((modelId: string, updates: Partial<Omit<Model, 'id' | 'url'>>) => {
+        setModelLibrary(prev => prev.map(model => 
+            model.id === modelId ? { ...model, ...updates } : model
+        ));
+    }, []);
+
+    const deleteModelFromLibrary = useCallback((modelId: string) => {
+        setModelLibrary(prev => prev.filter(model => model.id !== modelId));
+    }, []);
+
+    const addResultToDressTheModelHistory = useCallback((resultUrl: string) => {
+        setDressTheModelHistory(prev => {
+            const newHistory = [resultUrl, ...prev.filter(url => url !== resultUrl)].slice(0, 20); // Keep last 20, prevent duplicates
+            try {
+                idbSet('__dressTheModelHistory__', newHistory);
+            } catch (error) {
+                console.error("Failed to save DTM history to IndexedDB", error);
+            }
+            return newHistory;
+        });
+    }, []);
+
 
     useEffect(() => {
         const fetchTranslations = async () => {
@@ -268,7 +313,16 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 'freeGeneration',
                 'imageInterpolation',
                 'mixStyle',
-                'aiUpscaler'
+                'aiUpscaler',
+                'productStudio',
+                'architectureIdeator',
+                'avatarCreator',
+                'photoRestoration',
+                'imageToReal',
+                'swapStyle',
+                'toyModelCreator',
+                'nanoBananaEditor',
+                'patternDesigner',
             ];
             try {
                 const fetchPromises = modules.map(module =>
@@ -357,8 +411,6 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 const response = await fetch('/setting.json');
                  if (!response.ok) {
                     console.warn('Could not load setting.json, using built-in settings.');
-                    // In a real-world scenario, you might have default settings hardcoded here.
-                    // For now, we'll just log the issue.
                     return;
                 }
                 const data = await response.json();
@@ -416,15 +468,12 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     
         const { viewId, state: importedState } = settings;
         
-        // This relies on getInitialStateForApp to know all valid viewIds
         const initialState = getInitialStateForApp(viewId);
-        if (initialState.stage === 'home') { // a simple check if the viewId is valid
+        if (initialState.stage === 'home') { 
             alert(`Unknown app in settings file: ${viewId}`);
             return;
         }
     
-        // Merge states to ensure we have all required properties.
-        // Imported state overrides defaults.
         const mergedState = { ...initialState, ...importedState };
     
         const newHistory = viewHistory.slice(0, historyIndex + 1);
@@ -455,59 +504,26 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             setHistoryIndex(prev => prev - 1);
         }
     }, [historyIndex]);
-    
+
     const handleGoForward = useCallback(() => {
         if (historyIndex < viewHistory.length - 1) {
-            setHistoryIndex(prev => prev - 1);
+            setHistoryIndex(prev => prev + 1);
         }
     }, [historyIndex, viewHistory.length]);
 
     const handleResetApp = useCallback(() => {
-        const currentViewId = viewHistory[historyIndex].viewId;
-        if (currentViewId !== 'home') {
-            navigateTo(currentViewId);
-        }
-    }, [viewHistory, historyIndex, navigateTo]);
-    
-    const handleOpenSearch = useCallback(() => setIsSearchOpen(true), []);
-    const handleCloseSearch = useCallback(() => setIsSearchOpen(false), []);
-    const handleOpenGallery = useCallback(() => setIsGalleryOpen(true), []);
-    const handleCloseGallery = useCallback(() => setIsGalleryOpen(false), []);
-    const handleOpenInfo = useCallback(() => setIsInfoOpen(true), []);
-    const handleCloseInfo = useCallback(() => setIsInfoOpen(false), []);
-    const toggleExtraTools = useCallback(() => setIsExtraToolsOpen(prev => !prev), []);
-    const openImageLayoutModal = useCallback(() => {
-        setIsImageLayoutModalOpen(true);
-        setIsExtraToolsOpen(false); // Close the tools menu when opening the modal
-    }, []);
-    const closeImageLayoutModal = useCallback(() => setIsImageLayoutModalOpen(false), []);
-    const openBeforeAfterModal = useCallback(() => {
-        setIsBeforeAfterModalOpen(true);
-        setIsExtraToolsOpen(false);
-    }, []);
-    const closeBeforeAfterModal = useCallback(() => setIsBeforeAfterModalOpen(false), []);
-    const openLayerComposer = useCallback(() => {
-        setIsLayerComposerMounted(true);
-        setIsLayerComposerVisible(true);
-        setIsExtraToolsOpen(false);
-    }, []);
-    const closeLayerComposer = useCallback(() => {
-        setIsLayerComposerMounted(false);
-        setIsLayerComposerVisible(false);
-    }, []);
-    const hideLayerComposer = useCallback(() => {
-        setIsLayerComposerVisible(false);
-    }, []);
-    
-    const toggleLayerComposer = useCallback(() => {
-        if (isLayerComposerVisible) {
-            hideLayerComposer();
-        } else {
-            openLayerComposer();
-        }
-    }, [isLayerComposerVisible, hideLayerComposer, openLayerComposer]);
+        const current = viewHistory[historyIndex];
+        const initialState = getInitialStateForApp(current.viewId);
 
-    const value: AppControlContextType = {
+        const newHistory = viewHistory.slice(0, historyIndex + 1);
+        newHistory.push({ viewId: current.viewId, state: initialState } as ViewState);
+
+        setViewHistory(newHistory);
+        setHistoryIndex(newHistory.length - 1);
+
+    }, [viewHistory, historyIndex]);
+
+    const value = {
         currentView,
         settings,
         theme,
@@ -520,9 +536,16 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         isExtraToolsOpen,
         isImageLayoutModalOpen,
         isBeforeAfterModalOpen,
+        beforeAfterImages,
         isLayerComposerMounted,
         isLayerComposerVisible,
         language,
+        modelLibrary,
+        dressTheModelHistory,
+        addModelToLibrary,
+        updateModelInLibrary,
+        deleteModelFromLibrary,
+        addResultToDressTheModelHistory,
         addImagesToGallery,
         removeImageFromGallery,
         replaceImageInGallery,
@@ -535,27 +558,45 @@ export const AppControlProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         handleGoBack,
         handleGoForward,
         handleResetApp,
-        handleOpenSearch,
-        handleCloseSearch,
-        handleOpenGallery,
-        handleCloseGallery,
-        handleOpenInfo,
-        handleCloseInfo,
-        toggleExtraTools,
-        openImageLayoutModal,
-        closeImageLayoutModal,
-        openBeforeAfterModal,
-        closeBeforeAfterModal,
-        openLayerComposer,
-        closeLayerComposer,
-        hideLayerComposer,
-        toggleLayerComposer,
+        handleOpenSearch: () => setIsSearchOpen(true),
+        handleCloseSearch: () => setIsSearchOpen(false),
+        handleOpenGallery: () => setIsGalleryOpen(true),
+        handleCloseGallery: () => setIsGalleryOpen(false),
+        handleOpenInfo: () => setIsInfoOpen(true),
+        handleCloseInfo: () => setIsInfoOpen(false),
+        toggleExtraTools: () => setIsExtraToolsOpen(prev => !prev),
+        openImageLayoutModal: () => setIsImageLayoutModalOpen(true),
+        closeImageLayoutModal: () => setIsImageLayoutModalOpen(false),
+        openBeforeAfterModal: (before: string | null = null, after: string | null = null) => {
+            setBeforeAfterImages([before, after]);
+            setIsBeforeAfterModalOpen(true);
+        },
+        closeBeforeAfterModal: () => {
+            setIsBeforeAfterModalOpen(false);
+            setBeforeAfterImages([null, null]);
+        },
+        openLayerComposer: () => {
+            setIsLayerComposerMounted(true);
+            setTimeout(() => setIsLayerComposerVisible(true), 10);
+        },
+        closeLayerComposer: () => {
+            setIsLayerComposerVisible(false);
+        },
+        hideLayerComposer: () => setIsLayerComposerMounted(false),
+        toggleLayerComposer: () => {
+            if (isLayerComposerVisible) {
+                setIsLayerComposerVisible(false);
+            } else {
+                setIsLayerComposerMounted(true);
+                setTimeout(() => setIsLayerComposerVisible(true), 10);
+            }
+        },
         importSettingsAndNavigate,
         t,
     };
 
     return (
-        <AppControlContext.Provider value={value}>
+        <AppControlContext.Provider value={value as AppControlContextType}>
             {children}
         </AppControlContext.Provider>
     );

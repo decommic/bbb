@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import toast from 'react-hot-toast';
+// FIX: Import ChangeEvent type from React
+import type { ChangeEvent } from 'react';
 import { type ImageForZip, type VideoTask } from './uiTypes';
 
 // Declare JSZip for creating zip files
@@ -14,7 +16,7 @@ declare const JSZip: any;
  * @param callback A function to call with the resulting file data URL.
  */
 export const handleFileUpload = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: ChangeEvent<HTMLInputElement>,
     callback: (result: string) => void
 ) => {
     if (e.target.files && e.target.files[0]) {

@@ -8,16 +8,16 @@
   },
   "apps": [
     {
-      "id": "ai-upscaler",
-      "titleKey": "app_ai-upscaler_title",
-      "descriptionKey": "app_ai-upscaler_description",
-      "icon": "🔎+"
-    },
-    {
       "id": "dress-the-model",
       "titleKey": "app_dress-the-model_title",
       "descriptionKey": "app_dress-the-model_description",
       "icon": "👗"
+    },
+    {
+      "id": "pattern-designer",
+      "titleKey": "app_pattern-designer_title",
+      "descriptionKey": "app_pattern-designer_description",
+      "icon": "🎨"
     },
     {
       "id": "replace-product-in-scene",
@@ -30,12 +30,6 @@
       "titleKey": "app_image-interpolation_title",
       "descriptionKey": "app_image-interpolation_description",
       "icon": "⚗️"
-    },
-    {
-      "id": "mix-style",
-      "titleKey": "app_mix-style_title",
-      "descriptionKey": "app_mix-style_description",
-      "icon": "🎭"
     },
     {
       "id": "free-generation",
@@ -64,16 +58,6 @@
     "uploaderCaptionSceneKey": "replaceProductInScene_uploaderCaptionScene",
     "uploaderDescriptionSceneKey": "replaceProductInScene_uploaderDescriptionScene"
   },
-  "mixStyle": {
-    "mainTitleKey": "mixStyle_mainTitle",
-    "subtitleKey": "mixStyle_subtitle",
-    "useSmartTitleWrapping": true,
-    "smartTitleWrapWords": 3,
-    "uploaderCaptionContentKey": "mixStyle_uploaderCaptionContent",
-    "uploaderDescriptionContentKey": "mixStyle_uploaderDescriptionContent",
-    "uploaderCaptionStyleKey": "mixStyle_uploaderCaptionStyle",
-    "uploaderDescriptionStyleKey": "mixStyle_uploaderDescriptionStyle"
-  },
   "freeGeneration": {
     "mainTitleKey": "freeGeneration_mainTitle",
     "subtitleKey": "freeGeneration_subtitle",
@@ -96,12 +80,16 @@
     "uploaderCaptionReferenceKey": "imageInterpolation_uploaderCaptionReference",
     "uploaderDescriptionReferenceKey": "imageInterpolation_uploaderDescriptionReference"
   },
-  "aiUpscaler": {
-    "mainTitleKey": "aiUpscaler_mainTitle",
-    "subtitleKey": "aiUpscaler_subtitle",
+  "patternDesigner": {
+    "mainTitleKey": "patternDesigner_mainTitle",
+    "subtitleKey": "patternDesigner_subtitle",
     "useSmartTitleWrapping": true,
     "smartTitleWrapWords": 3,
-    "uploaderCaptionKey": "aiUpscaler_uploaderCaption",
-    "uploaderDescriptionKey": "aiUpscaler_uploaderDescription"
+    "uploaderCaptionClothingKey": "patternDesigner_uploaderCaptionClothing",
+    "uploaderDescriptionClothingKey": "patternDesigner_uploaderDescriptionClothing",
+    "uploaderCaptionPattern1Key": "patternDesigner_uploaderCaptionPattern1",
+    "uploaderDescriptionPattern1Key": "patternDesigner_uploaderDescriptionPattern1",
+    "uploaderCaptionPattern2Key": "patternDesigner_uploaderCaptionPattern2",
+    "uploaderDescriptionPattern2Key": "patternDesigner_uploaderDescriptionPattern2"
   }
 }

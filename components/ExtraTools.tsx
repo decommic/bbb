@@ -21,7 +21,7 @@ const ExtraTools: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
             id: 'before-after',
             label: t('extraTools_beforeAfter'),
             action: openBeforeAfterModal,
-            icon: <BeforeAfterIcon className="h-5 w-5 group-hover:text-yellow-400 transition-colors" />,
+            icon: <BeforeAfterIcon className="h-5 w-5" />,
         }
     ];
 
@@ -35,7 +35,9 @@ const ExtraTools: React.FC<{ isOpen: boolean }> = ({ isOpen }) => {
                 {isOpen && tools.map((tool, index) => (
                     <motion.button
                         key={tool.id}
-                        onClick={tool.action}
+                        // FIX: The onClick handler for a button passes a MouseEvent, but the `openBeforeAfterModal` signature expects optional strings.
+                        // Wrapping `tool.action` in an arrow function ensures it's called without arguments, resolving the type error.
+                        onClick={() => (tool.action as (...args: any[]) => void)()}
                         className="btn-search group"
                         aria-label={tool.label}
                         title={tool.label}

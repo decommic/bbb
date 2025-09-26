@@ -129,7 +129,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose, images }) 
 
     const processFiles = async (files: FileList | null) => {
         if (!files || files.length === 0) return;
-        const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+        // FIX: Add explicit File type to resolve 'type' property error on 'unknown'.
+        const imageFiles = Array.from(files).filter((file: File) => file.type.startsWith('image/'));
         if (imageFiles.length === 0) return;
 
         const readImageAsDataURL = (file: File): Promise<string> => {

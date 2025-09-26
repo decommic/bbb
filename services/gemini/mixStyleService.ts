@@ -29,7 +29,6 @@ async function analyzeStyle(styleImageDataUrl: string): Promise<string> {
     
     try {
         const response = await ai.models.generateContent({
-            // FIX: Use the recommended model 'gemini-2.5-flash' instead of the prohibited 'gemini-pro-vision'.
             model: 'gemini-2.5-flash',
             contents: { parts: [imagePart, {text: prompt}] },
         });

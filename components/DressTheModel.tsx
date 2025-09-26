@@ -2,11 +2,12 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, { useState, useCallback, ChangeEvent, useRef, useEffect } from 'react';
+import React, { useState, useCallback, ChangeEvent, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateDressedModelImage, editImageWithPrompt } from '../services/geminiService';
 import ActionablePolaroidCard from './ActionablePolaroidCard';
 import Lightbox from './Lightbox';
+import ModelLibraryModal from './ModelLibraryModal';
 import { 
     AppScreenHeader,
     handleFileUpload,
@@ -21,8 +22,10 @@ import {
     SearchableSelect,
     useAppControls,
     embedJsonInPng,
-    getInitialStateForApp,
+    Slider,
 } from './uiUtils';
+// FIX: Import 'cn' from its correct location.
+import { cn } from '../lib/utils';
 
 interface DressTheModelProps {
     mainTitle: string;
@@ -50,35 +53,50 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
         ...headerProps
     } = props;
     
-    const { t, settings } = useAppControls();
+    const { t, settings, addModelToLibrary, dressTheModelHistory, addResultToDressTheModelHistory } = useAppControls();
     const { lightboxIndex, openLightbox, closeLightbox, navigateLightbox } = useLightbox();
     const { videoTasks, generateVideo } = useVideoGeneration();
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [localNotes, setLocalNotes] = useState(appState.options.notes);
-
+    const [isModelLibraryOpen, setIsModelLibraryOpen] = useState(false);
+    
     useEffect(() => {
         setLocalNotes(appState.options.notes);
     }, [appState.options.notes]);
     
-    const BACKGROUND_OPTIONS = t('dressTheModel_backgroundOptions');
-    const POSE_OPTIONS = t('dressTheModel_poseOptions');
-    const PHOTO_STYLE_OPTIONS = t('dressTheModel_photoStyleOptions');
+    const BACKGROUND_OPTIONS: string[] = t('dressTheModel_backgroundOptions');
+    const POSE_OPTIONS: string[] = t('dressTheModel_poseOptions');
+    const PHOTO_STYLE_OPTIONS: string[] = t('dressTheModel_photoStyleOptions');
     const ASPECT_RATIO_OPTIONS = t('aspectRatioOptions');
+    const UPSCALE_FACTOR_OPTIONS: string[] = t('dressTheModel_upscaleFactorOptions');
+    const DENOISE_LEVELS: readonly string[] = t('dressTheModel_denoiseLevels');
+    const SHARPEN_LEVELS: readonly string[] = t('dressTheModel_sharpenLevels');
 
     const lightboxImages = [appState.modelImage, appState.clothingImage, ...appState.historicalImages].filter((img): img is string => !!img);
 
-    const handleModelImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        handleFileUpload(e, (imageDataUrl) => {
-            onStateChange({
-                ...appState,
-                stage: appState.clothingImage ? 'configuring' : 'idle',
-                modelImage: imageDataUrl,
-                generatedImage: null,
-                historicalImages: [],
-                error: null,
-            });
-            addImagesToGallery([imageDataUrl]);
+    const handleModelImageSelected = (imageDataUrl: string) => {
+        addModelToLibrary(imageDataUrl);
+        onStateChange({
+            ...appState,
+            stage: appState.clothingImage ? 'configuring' : 'idle',
+            modelImage: imageDataUrl,
+            generatedImage: null,
+            historicalImages: dressTheModelHistory,
+            error: null,
+            selectedHistoryImage: null, // Reset style reference when model changes
         });
+        addImagesToGallery([imageDataUrl]);
+    };
+    
+    const handleHistoryImageSelect = (imageUrl: string) => {
+        onStateChange({
+            ...appState,
+            selectedHistoryImage: appState.selectedHistoryImage === imageUrl ? null : imageUrl,
+        });
+    };
+
+    const handleModelImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+        handleFileUpload(e, handleModelImageSelected);
     };
 
     const handleClothingImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -88,21 +106,13 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
                 stage: appState.modelImage ? 'configuring' : 'idle',
                 clothingImage: imageDataUrl,
                 generatedImage: null,
-                historicalImages: [],
+                historicalImages: dressTheModelHistory,
                 error: null,
             });
             addImagesToGallery([imageDataUrl]);
         });
     };
     
-    const handleModelImageChange = (newUrl: string) => {
-        onStateChange({
-            ...appState,
-            stage: appState.clothingImage ? 'configuring' : 'idle',
-            modelImage: newUrl,
-        });
-        addImagesToGallery([newUrl]);
-    };
     const handleClothingImageChange = (newUrl: string) => {
         onStateChange({
             ...appState,
@@ -112,12 +122,13 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
         addImagesToGallery([newUrl]);
     };
     const handleGeneratedImageChange = (newUrl: string) => {
-        const newHistorical = [...appState.historicalImages, newUrl];
+        addResultToDressTheModelHistory(newUrl);
+        const newHistorical = [newUrl, ...appState.historicalImages];
         onStateChange({ ...appState, stage: 'results', generatedImage: newUrl, historicalImages: newHistorical });
         addImagesToGallery([newUrl]);
     };
 
-    const handleOptionChange = (field: keyof DressTheModelState['options'], value: string | boolean) => {
+    const handleOptionChange = (field: keyof DressTheModelState['options'], value: string | boolean | number) => {
         onStateChange({ ...appState, options: { ...appState.options, [field]: value } });
     };
 
@@ -125,14 +136,26 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
         if (!appState.modelImage || !appState.clothingImage) return;
         onStateChange({ ...appState, stage: 'generating', error: null });
         try {
-            // No need to transform options, the service handles '' and 'Tự động' correctly
-            const resultUrl = await generateDressedModelImage(appState.modelImage, appState.clothingImage, appState.options);
+            const historyForGeneration = appState.options.useHistoryReference ? appState.historicalImages : [];
+            const referenceForGeneration = appState.options.useHistoryReference ? appState.selectedHistoryImage : null;
+            
+            const resultUrl = await generateDressedModelImage(
+                appState.modelImage, 
+                appState.clothingImage, 
+                appState.options, 
+                historyForGeneration, 
+                referenceForGeneration
+            );
             const settingsToEmbed = {
                 viewId: 'dress-the-model',
                 state: { ...appState, stage: 'configuring', generatedImage: null, historicalImages: [], error: null },
             };
             const urlWithMetadata = await embedJsonInPng(resultUrl, settingsToEmbed, settings.enableImageMetadata);
-            onStateChange({ ...appState, stage: 'results', generatedImage: urlWithMetadata, historicalImages: [...appState.historicalImages, urlWithMetadata] });
+            
+            addResultToDressTheModelHistory(urlWithMetadata);
+            const newHistoricalImages = [urlWithMetadata, ...appState.historicalImages];
+
+            onStateChange({ ...appState, stage: 'results', generatedImage: urlWithMetadata, historicalImages: newHistoricalImages });
             addImagesToGallery([urlWithMetadata]);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -141,7 +164,7 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
     };
     
     const handleRegeneration = async (prompt: string) => {
-        if (!appState.generatedImage) return;
+        if (!appState.generatedImage || !appState.modelImage) return;
         onStateChange({ ...appState, stage: 'generating', error: null });
         try {
             const resultUrl = await editImageWithPrompt(appState.generatedImage, prompt);
@@ -150,7 +173,11 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
                 state: { ...appState, stage: 'configuring', generatedImage: null, historicalImages: [], error: null },
             };
             const urlWithMetadata = await embedJsonInPng(resultUrl, settingsToEmbed, settings.enableImageMetadata);
-            onStateChange({ ...appState, stage: 'results', generatedImage: urlWithMetadata, historicalImages: [...appState.historicalImages, urlWithMetadata] });
+
+            addResultToDressTheModelHistory(urlWithMetadata);
+            const newHistoricalImages = [urlWithMetadata, ...appState.historicalImages];
+
+            onStateChange({ ...appState, stage: 'results', generatedImage: urlWithMetadata, historicalImages: newHistoricalImages });
             addImagesToGallery([urlWithMetadata]);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -195,6 +222,9 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
             </label>
             <input id={id} type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={onUpload} />
             {description && <p className="base-font font-bold text-neutral-300 text-center max-w-xs text-md">{description}</p>}
+            {id === 'model-upload' && (
+                <button onClick={() => setIsModelLibraryOpen(true)} className="btn btn-secondary btn-sm mt-2">{t('dressTheModel_selectFromLibrary')}</button>
+            )}
         </div>
     );
 
@@ -214,7 +244,7 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Uploader id="model-upload" onUpload={handleModelImageUpload} onImageChange={handleModelImageChange} caption={uploaderCaptionModel} description={uploaderDescriptionModel} currentImage={appState.modelImage} placeholderType="person" cardType="photo-input" />
+                        <Uploader id="model-upload" onUpload={handleModelImageUpload} onImageChange={handleModelImageSelected} caption={uploaderCaptionModel} description={uploaderDescriptionModel} currentImage={appState.modelImage} placeholderType="person" cardType="photo-input" />
                         <Uploader id="clothing-upload" onUpload={handleClothingImageUpload} onImageChange={handleClothingImageChange} caption={uploaderCaptionClothing} description={uploaderDescriptionClothing} currentImage={appState.clothingImage} placeholderType="clothing" cardType="clothing-input" />
                     </motion.div>
                 </div>
@@ -224,81 +254,199 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
                 <motion.div className="flex flex-col items-center gap-8 w-full max-w-screen-2xl py-6 overflow-y-auto" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                     <div className="w-full overflow-x-auto pb-4">
                         <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 w-full md:w-max mx-auto px-4">
-                            <ActionablePolaroidCard type="photo-input" mediaUrl={appState.modelImage} caption={t('dressTheModel_modelCaption')} status="done" onClick={() => appState.modelImage && openLightbox(lightboxImages.indexOf(appState.modelImage))} onImageChange={handleModelImageChange} />
+                            <ActionablePolaroidCard type="photo-input" mediaUrl={appState.modelImage} caption={t('dressTheModel_modelCaption')} status="done" onClick={() => appState.modelImage && openLightbox(lightboxImages.indexOf(appState.modelImage))} onImageChange={handleModelImageSelected} />
                             <ActionablePolaroidCard type="clothing-input" mediaUrl={appState.clothingImage} caption={t('dressTheModel_clothingCaption')} status="done" onClick={() => appState.clothingImage && openLightbox(lightboxImages.indexOf(appState.clothingImage))} onImageChange={handleClothingImageChange} />
                         </div>
                     </div>
-
-                    <OptionsPanel className="max-w-4xl">
-                        <h2 className="base-font font-bold text-2xl text-yellow-400 border-b border-yellow-400/20 pb-2">{t('common_options')}</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <SearchableSelect
-                                id="background"
-                                label={t('dressTheModel_backgroundLabel')}
-                                options={BACKGROUND_OPTIONS}
-                                value={appState.options.background}
-                                onChange={(value) => handleOptionChange('background', value)}
-                                placeholder={t('dressTheModel_backgroundPlaceholder')}
-                            />
-                            <SearchableSelect
-                                id="pose"
-                                label={t('dressTheModel_poseLabel')}
-                                options={POSE_OPTIONS}
-                                value={appState.options.pose}
-                                onChange={(value) => handleOptionChange('pose', value)}
-                                placeholder={t('dressTheModel_posePlaceholder')}
-                            />
-                             <SearchableSelect
-                                id="style"
-                                label={t('dressTheModel_styleLabel')}
-                                options={PHOTO_STYLE_OPTIONS}
-                                value={appState.options.style}
-                                onChange={(value) => handleOptionChange('style', value)}
-                                placeholder={t('dressTheModel_stylePlaceholder')}
-                            />
-                             <div>
-                                <label htmlFor="aspect-ratio-dress" className="block text-left base-font font-bold text-lg text-neutral-200 mb-2">{t('common_aspectRatio')}</label>
-                                <select id="aspect-ratio-dress" value={appState.options.aspectRatio} onChange={(e) => handleOptionChange('aspectRatio', e.target.value)} className="form-input">
-                                    {ASPECT_RATIO_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                </select>
+                    
+                    {appState.historicalImages.length > 0 && (
+                        <div className="w-full max-w-4xl px-4">
+                            <div className="flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id="use-history-reference"
+                                    checked={appState.options.useHistoryReference}
+                                    onChange={(e) => handleOptionChange('useHistoryReference', e.target.checked)}
+                                    className="h-4 w-4 rounded border-neutral-500 bg-neutral-700 text-yellow-400 focus:ring-yellow-400 focus:ring-offset-neutral-800"
+                                />
+                                <label htmlFor="use-history-reference" className="ml-3 block font-bold text-xl text-yellow-400">
+                                    {t('dressTheModel_resultHistoryTitle')}
+                                </label>
+                            </div>
+                            
+                            <div className="overflow-hidden mt-3">
+                                <p className="text-sm text-neutral-400 mb-3">{t('dressTheModel_historyReference_description')}</p>
+                                <div className="flex gap-3 overflow-x-auto pb-3 -mb-3">
+                                    {appState.historicalImages.map((imgUrl, index) => (
+                                        <img 
+                                            key={index} 
+                                            src={imgUrl} 
+                                            onClick={() => handleHistoryImageSelect(imgUrl)} 
+                                            alt={`Result history ${index + 1}`} 
+                                            className={cn(
+                                                "h-24 w-auto rounded-md object-cover cursor-pointer hover:scale-105 transition-all duration-200",
+                                                appState.options.useHistoryReference && appState.selectedHistoryImage === imgUrl ? 'ring-4 ring-yellow-400' : 'ring-2 ring-transparent'
+                                            )} 
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <label htmlFor="notes" className="block text-left base-font font-bold text-lg text-neutral-200 mb-2">{t('common_additionalNotes')}</label>
-                            <textarea
-                                id="notes"
-                                value={localNotes}
-                                onChange={(e) => setLocalNotes(e.target.value)}
-                                onBlur={() => {
-                                    if (localNotes !== appState.options.notes) {
-                                        handleOptionChange('notes', localNotes);
-                                    }
-                                }}
-                                placeholder={t('dressTheModel_notesPlaceholder')}
-                                className="form-input h-24"
-                                rows={3}
-                            />
-                        </div>
-                        <div className="flex items-center pt-2">
-                            <input type="checkbox" id="remove-watermark-dress" checked={appState.options.removeWatermark} onChange={(e) => handleOptionChange('removeWatermark', e.target.checked)} className="h-4 w-4 rounded border-neutral-500 bg-neutral-700 text-yellow-400 focus:ring-yellow-400 focus:ring-offset-neutral-800" aria-label={t('common_removeWatermark')} />
-                            <label htmlFor="remove-watermark-dress" className="ml-3 block text-sm font-medium text-neutral-300">{t('common_removeWatermark')}</label>
-                        </div>
-                        <div className="flex items-center justify-end gap-4 pt-4">
-                            <button onClick={onReset} className="btn btn-secondary">{t('common_changeImage')}</button>
-                            <button onClick={executeInitialGeneration} className="btn btn-primary" disabled={isLoading}>{isLoading ? t('dressTheModel_creating') : t('dressTheModel_createButton')}</button>
+                    )}
+
+
+                    <OptionsPanel className="max-w-4xl">
+                        <div className="space-y-4">
+                            <h2 className="base-font font-bold text-2xl text-yellow-400 border-b border-yellow-400/20 pb-2">{t('common_options')}</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <SearchableSelect
+                                    id="background"
+                                    label={t('dressTheModel_backgroundLabel')}
+                                    options={BACKGROUND_OPTIONS}
+                                    value={appState.options.background}
+                                    onChange={(value) => handleOptionChange('background', value)}
+                                    placeholder={t('dressTheModel_backgroundPlaceholder')}
+                                />
+                                <SearchableSelect
+                                    id="pose"
+                                    label={t('dressTheModel_poseLabel')}
+                                    options={POSE_OPTIONS}
+                                    value={appState.options.pose}
+                                    onChange={(value) => handleOptionChange('pose', value)}
+                                    placeholder={t('dressTheModel_posePlaceholder')}
+                                />
+                                 <SearchableSelect
+                                    id="style"
+                                    label={t('dressTheModel_styleLabel')}
+                                    options={PHOTO_STYLE_OPTIONS}
+                                    value={appState.options.style}
+                                    onChange={(value) => handleOptionChange('style', value)}
+                                    placeholder={t('dressTheModel_stylePlaceholder')}
+                                />
+                                 <div>
+                                    <label htmlFor="aspect-ratio-dress" className="block text-left base-font font-bold text-lg text-neutral-200 mb-2">{t('common_aspectRatio')}</label>
+                                    <select id="aspect-ratio-dress" value={appState.options.aspectRatio} onChange={(e) => handleOptionChange('aspectRatio', e.target.value)} className="form-input">
+                                        {ASPECT_RATIO_OPTIONS.map((opt:string) => <option key={opt} value={opt}>{opt}</option>)}
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label htmlFor="notes" className="block text-left base-font font-bold text-lg text-neutral-200 mb-2">{t('common_additionalNotes')}</label>
+                                <textarea
+                                    id="notes"
+                                    value={localNotes}
+                                    onChange={(e) => setLocalNotes(e.target.value)}
+                                    onBlur={() => {
+                                        if (localNotes !== appState.options.notes) {
+                                            handleOptionChange('notes', localNotes);
+                                        }
+                                    }}
+                                    placeholder={t('dressTheModel_notesPlaceholder')}
+                                    className="form-input h-24"
+                                    rows={3}
+                                />
+                            </div>
+                            <div className="border-t border-yellow-400/20 pt-4 space-y-4">
+                                <div className="flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        id="enhance-quality" 
+                                        checked={appState.options.enhanceQuality} 
+                                        onChange={(e) => handleOptionChange('enhanceQuality', e.target.checked)}
+                                        className="h-4 w-4 rounded border-neutral-500 bg-neutral-700 text-yellow-400 focus:ring-yellow-400 focus:ring-offset-neutral-800"
+                                    />
+                                    <label htmlFor="enhance-quality" className="ml-3 block text-sm font-bold text-neutral-200">
+                                        {t('dressTheModel_enhanceQuality')}
+                                    </label>
+                                </div>
+                                
+                                <AnimatePresence>
+                                    {appState.options.enhanceQuality && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="overflow-hidden pl-7 space-y-4"
+                                        >
+                                            <p className="text-xs text-neutral-400">{t('dressTheModel_enhanceQualityNote')}</p>
+                                            
+                                            <div>
+                                                <label htmlFor="upscale-factor" className="block text-left base-font font-bold text-lg text-neutral-200 mb-2">{t('dressTheModel_upscaleFactor')}</label>
+                                                <select id="upscale-factor" value={appState.options.upscaleFactor} onChange={(e) => handleOptionChange('upscaleFactor', e.target.value)} className="form-input">
+                                                    {UPSCALE_FACTOR_OPTIONS.map((opt: string) => <option key={opt} value={opt === 'Không' ? 'none' : opt}>{opt}</option>)}
+                                                </select>
+                                            </div>
+
+                                            <Slider
+                                                label={t('dressTheModel_denoise')}
+                                                options={DENOISE_LEVELS}
+                                                value={DENOISE_LEVELS[appState.options.denoiseLevel]}
+                                                onChange={(value) => handleOptionChange('denoiseLevel', DENOISE_LEVELS.indexOf(value))}
+                                            />
+                                             <Slider
+                                                label={t('dressTheModel_sharpen')}
+                                                options={SHARPEN_LEVELS}
+                                                value={SHARPEN_LEVELS[appState.options.sharpenLevel]}
+                                                onChange={(value) => handleOptionChange('sharpenLevel', SHARPEN_LEVELS.indexOf(value))}
+                                            />
+
+                                            <div className="flex items-center">
+                                                <input 
+                                                    type="checkbox" 
+                                                    id="restore-old-photo" 
+                                                    checked={appState.options.restoreOldPhoto} 
+                                                    onChange={(e) => handleOptionChange('restoreOldPhoto', e.target.checked)}
+                                                    className="h-4 w-4 rounded border-neutral-500 bg-neutral-700 text-yellow-400 focus:ring-yellow-400 focus:ring-offset-neutral-800"
+                                                />
+                                                <label htmlFor="restore-old-photo" className="ml-3 block text-sm font-medium text-neutral-300">
+                                                   {t('dressTheModel_restoreOldPhoto')}
+                                                </label>
+                                            </div>
+                                            <div className="flex items-center">
+                                                <input 
+                                                    type="checkbox" 
+                                                    id="face-restoration" 
+                                                    checked={appState.options.faceRestoration} 
+                                                    onChange={(e) => handleOptionChange('faceRestoration', e.target.checked)}
+                                                    className="h-4 w-4 rounded border-neutral-500 bg-neutral-700 text-yellow-400 focus:ring-yellow-400 focus:ring-offset-neutral-800"
+                                                />
+                                                <label htmlFor="face-restoration" className="ml-3 block text-sm font-medium text-neutral-300">
+                                                   {t('dressTheModel_faceRestoration')}
+                                                </label>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                            <div className="flex items-center pt-2">
+                                <input type="checkbox" id="remove-watermark-dress" checked={appState.options.removeWatermark} onChange={(e) => handleOptionChange('removeWatermark', e.target.checked)} className="h-4 w-4 rounded border-neutral-500 bg-neutral-700 text-yellow-400 focus:ring-yellow-400 focus:ring-offset-neutral-800" aria-label={t('common_removeWatermark')} />
+                                <label htmlFor="remove-watermark-dress" className="ml-3 block text-sm font-medium text-neutral-300">{t('common_removeWatermark')}</label>
+                            </div>
+                            <div className="flex items-center justify-end gap-4 pt-4">
+                                <button onClick={onReset} className="btn btn-secondary">{t('common_changeImage')}</button>
+                                <button onClick={executeInitialGeneration} className="btn btn-primary" disabled={isLoading}>{isLoading ? t('dressTheModel_creating') : t('dressTheModel_createButton')}</button>
+                            </div>
                         </div>
                     </OptionsPanel>
                 </motion.div>
             )}
             
             {(appState.stage === 'generating' || appState.stage === 'results') && (
-                <ResultsView stage={appState.stage} originalImage={appState.modelImage} onOriginalClick={() => appState.modelImage && openLightbox(lightboxImages.indexOf(appState.modelImage))} error={appState.error} isMobile={isMobile} actions={
-                    <>
-                        {appState.generatedImage && !appState.error && (<button onClick={handleDownloadAll} className="btn btn-primary">{t('common_downloadAll')}</button>)}
-                        <button onClick={handleBackToOptions} className="btn btn-secondary">{t('common_editOptions')}</button>
-                        <button onClick={onReset} className="btn btn-secondary !bg-red-500/20 !border-red-500/80 hover:!bg-red-500 hover:!text-white">{t('common_startOver')}</button>
-                    </>
-                }>
+                <ResultsView
+                    stage={appState.stage}
+                    originalImage={appState.modelImage}
+                    generatedImage={appState.generatedImage}
+                    onOriginalClick={() => appState.modelImage && openLightbox(lightboxImages.indexOf(appState.modelImage))}
+                    error={appState.error}
+                    isMobile={isMobile}
+                    actions={
+                        <>
+                            {appState.generatedImage && !appState.error && (<button onClick={handleDownloadAll} className="btn btn-primary">{t('common_downloadAll')}</button>)}
+                            <button onClick={handleBackToOptions} className="btn btn-secondary">{t('common_editOptions')}</button>
+                            <button onClick={onReset} className="btn btn-secondary !bg-red-500/20 !border-red-500/80 hover:!bg-red-500 hover:!text-white">{t('common_startOver')}</button>
+                        </>
+                    }
+                >
                     {appState.clothingImage && (
                         <motion.div key="clothing" className="w-full md:w-auto flex-shrink-0" whileHover={{ scale: 1.05, zIndex: 10 }} transition={{ duration: 0.2 }}>
                             <ActionablePolaroidCard type="clothing-input" caption={t('dressTheModel_clothingCaption')} status="done" mediaUrl={appState.clothingImage} isMobile={isMobile} onClick={() => appState.clothingImage && openLightbox(lightboxImages.indexOf(appState.clothingImage))} onImageChange={handleClothingImageChange} />
@@ -347,6 +495,7 @@ const DressTheModel: React.FC<DressTheModelProps> = (props) => {
             )}
 
             <Lightbox images={lightboxImages} selectedIndex={lightboxIndex} onClose={closeLightbox} onNavigate={navigateLightbox} />
+            <ModelLibraryModal isOpen={isModelLibraryOpen} onClose={() => setIsModelLibraryOpen(false)} onSelect={handleModelImageSelected} />
         </div>
     );
 };

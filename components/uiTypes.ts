@@ -25,7 +25,6 @@ export interface AppConfig {
     icon: string;
 }
 
-// FIX: Add the missing Settings type definition.
 export interface AppSettings {
     mainTitleKey: string;
     subtitleKey: string;
@@ -49,6 +48,15 @@ export interface Settings {
     freeGeneration: AppSettings;
     imageInterpolation: AppSettings;
     aiUpscaler: AppSettings;
+    productStudio: AppSettings;
+    architectureIdeator: AppSettings;
+    avatarCreator: AppSettings;
+    photoRestoration: AppSettings;
+    imageToReal: AppSettings;
+    swapStyle: AppSettings;
+    toyModelCreator: AppSettings;
+    nanoBananaEditor: AppSettings;
+    patternDesigner: AppSettings;
 }
 
 export type Theme = 'vietnam' | 'black-night' | 'clear-sky' | 'skyline' | 'emerald-water' | 'life';
@@ -59,6 +67,15 @@ export interface ImageToEdit {
     onSave: (newUrl: string) => void;
 }
 
+// Model Library Types
+export type ModelCategory = 'default';
+
+export interface Model {
+  id: string; // Using URL as ID
+  url: string;
+  isFavorite: boolean;
+  category: ModelCategory;
+}
 
 // --- Centralized State Definitions ---
 
@@ -70,12 +87,38 @@ export interface DressTheModelState {
     clothingImage: string | null;
     generatedImage: string | null;
     historicalImages: string[];
+    selectedHistoryImage: string | null;
     options: {
         background: string;
         pose: string;
         style: string;
         aspectRatio: string;
         notes: string;
+        removeWatermark: boolean;
+        useHistoryReference: boolean;
+        enhanceQuality: boolean;
+        faceRestoration: boolean;
+        upscaleFactor: 'none' | '2x' | '4x';
+        denoiseLevel: number; // 0-3
+        restoreOldPhoto: boolean;
+        sharpenLevel: number; // 0-3
+    };
+    error: string | null;
+}
+
+export interface PatternDesignerState {
+    stage: 'idle' | 'configuring' | 'generating' | 'results';
+    clothingImage: string | null;
+    patternImage: string | null;
+    patternImage2: string | null;
+    generatedImage: string | null;
+    historicalImages: string[];
+    options: {
+        applyMode: string;
+        aspectRatio: string;
+        patternScale: number; // 0-3
+        notes: string;
+        changeObjectColor: boolean;
         removeWatermark: boolean;
     };
     error: string | null;
@@ -160,7 +203,6 @@ export interface AIUpscalerState {
     error: string | null;
 }
 
-// FIX: Add missing ProductStudioState to resolve import errors.
 export interface ProductStudioState {
     stage: 'idle' | 'configuring' | 'generating' | 'results';
     productImage: string | null;
@@ -174,7 +216,6 @@ export interface ProductStudioState {
     error: string | null;
 }
 
-// FIX: Add missing state type definitions
 export interface ArchitectureIdeatorState {
     stage: 'idle' | 'configuring' | 'generating' | 'results';
     uploadedImage: string | null;
@@ -255,7 +296,6 @@ export interface ToyModelCreatorState {
     generatedImage: string | null;
     historicalImages: string[];
     concept: string; // e.g., 'desktop_model', 'keychain'
-    // FIX: Explicitly define all options to fix type error when calling the service.
     options: {
         // Shared
         aspectRatio: string;
@@ -309,12 +349,12 @@ export interface NanoBananaEditorState {
 export type AnyAppState =
   | HomeState
   | DressTheModelState
+  | PatternDesignerState
   | ReplaceProductInSceneState
   | MixStyleState
   | FreeGenerationState
   | ImageInterpolationState
   | AIUpscalerState
-  // FIX: Add ProductStudioState to the union type.
   | ProductStudioState
   | ArchitectureIdeatorState
   | AvatarCreatorState
@@ -327,14 +367,13 @@ export type AnyAppState =
 // --- App Navigation & State Types (Moved from App.tsx) ---
 export type HomeView = { viewId: 'home'; state: HomeState };
 export type DressTheModelView = { viewId: 'dress-the-model'; state: DressTheModelState };
+export type PatternDesignerView = { viewId: 'pattern-designer'; state: PatternDesignerState };
 export type ReplaceProductInSceneView = { viewId: 'replace-product-in-scene'; state: ReplaceProductInSceneState };
 export type MixStyleView = { viewId: 'mix-style'; state: MixStyleState };
 export type FreeGenerationView = { viewId: 'free-generation'; state: FreeGenerationState };
 export type ImageInterpolationView = { viewId: 'image-interpolation'; state: ImageInterpolationState };
 export type AIUpscalerView = { viewId: 'ai-upscaler', state: AIUpscalerState };
-// FIX: Add missing ProductStudioView type.
 export type ProductStudioView = { viewId: 'product-studio'; state: ProductStudioState };
-// FIX: Add missing view type definitions
 export type ArchitectureIdeatorView = { viewId: 'architecture-ideator'; state: ArchitectureIdeatorState };
 export type AvatarCreatorView = { viewId: 'avatar-creator'; state: AvatarCreatorState };
 export type PhotoRestorationView = { viewId: 'photo-restoration'; state: PhotoRestorationState };
@@ -347,12 +386,12 @@ export type NanoBananaEditorView = { viewId: 'nano-banana-editor'; state: NanoBa
 export type ViewState =
   | HomeView
   | DressTheModelView
+  | PatternDesignerView
   | ReplaceProductInSceneView
   | MixStyleView
   | FreeGenerationView
   | ImageInterpolationView
   | AIUpscalerView
-  // FIX: Add ProductStudioView to the union type.
   | ProductStudioView
   | ArchitectureIdeatorView
   | AvatarCreatorView
@@ -362,51 +401,10 @@ export type ViewState =
   | ToyModelCreatorView
   | NanoBananaEditorView;
 
-// Helper function to get initial state for an app
-export const getInitialStateForApp = (viewId: string): AnyAppState => {
-    switch (viewId) {
-        case 'home':
-            return { stage: 'home' };
-        case 'dress-the-model':
-            return { stage: 'idle', modelImage: null, clothingImage: null, generatedImage: null, historicalImages: [], options: { background: '', pose: '', style: '', aspectRatio: 'Giữ nguyên', notes: '', removeWatermark: false }, error: null };
-        case 'replace-product-in-scene':
-            return { stage: 'idle', modelImage: null, clothingImage: null, generatedImage: null, historicalImages: [], options: { layout: 'Tự động', photoStyle: 'Tự động', aspectRatio: 'Giữ nguyên', notes: '', removeWatermark: false }, error: null };
-        case 'mix-style':
-            return { stage: 'idle', contentImage: null, styleImage: null, generatedImage: null, historicalImages: [], options: { styleStrength: 'Rất mạnh', notes: '', removeWatermark: false }, finalPrompt: null, error: null };
-        case 'free-generation':
-            return { stage: 'configuring', image1: null, image2: null, generatedImages: [], historicalImages: [], options: { prompt: '', removeWatermark: false, numberOfImages: 1, aspectRatio: 'Giữ nguyên' }, error: null };
-        case 'image-interpolation':
-             return { stage: 'idle', analysisMode: 'general', inputImage: null, outputImage: null, referenceImage: null, generatedPrompt: '', promptSuggestions: '', additionalNotes: '', finalPrompt: null, generatedImage: null, historicalImages: [], options: { removeWatermark: false, aspectRatio: 'Giữ nguyên' }, error: null };
-        case 'ai-upscaler':
-            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { upscaleFactor: '2x', enhancementLevel: 'Tăng cường', notes: '', removeWatermark: false }, error: null };
-        // FIX: Add initial state for product-studio view.
-        case 'product-studio':
-            return { stage: 'idle', productImage: null, sceneImage: null, generatedImage: null, historicalImages: [], options: { creativityLevel: 'Giữ nguyên nền', notes: '' }, error: null };
-        // FIX: Add initial state for new app views
-        case 'architecture-ideator':
-            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { context: '', style: '', color: '', lighting: '', notes: '', removeWatermark: false }, error: null };
-        case 'avatar-creator':
-            return { stage: 'idle', uploadedImage: null, generatedImages: {}, selectedIdeas: [], historicalImages: [], options: { additionalPrompt: '', removeWatermark: false, aspectRatio: '1:1' }, error: null };
-        case 'photo-restoration':
-            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { type: 'Chân dung', gender: '', age: '', nationality: 'Việt Nam', notes: '', removeWatermark: false, removeStains: true }, error: null };
-        case 'image-to-real':
-            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { faithfulness: 'Trung bình', notes: '', removeWatermark: false }, error: null };
-        case 'swap-style':
-            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { style: '', styleStrength: 'Trung bình', notes: '', removeWatermark: false }, error: null };
-        case 'toy-model-creator':
-            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], concept: 'desktop_model', options: { aspectRatio: '16:9', notes: '', removeWatermark: false, computerType: '', softwareType: '', boxType: '', background: '', keychainMaterial: '', keychainStyle: '', accompanyingItems: '', deskSurface: '', capsuleColor: '', modelFinish: '', capsuleContents: '', displayLocation: '', miniatureMaterial: '', baseMaterial: '', baseShape: '', lightingStyle: '', pokeballType: '', evolutionDisplay: '', modelStyle: '', modelType: '', blueprintType: '', characterMood: '' }, error: null };
-        case 'nano-banana-editor':
-            return { stage: 'idle', uploadedImage: null, generatedImage: null, generatedText: null, historicalImages: [], options: { prompt: '' }, error: null };
-        default:
-            return { stage: 'home' };
-    }
-};
-
-// --- Context Types ---
-
+// --- App Control Context Type ---
 export interface AppControlContextType {
     currentView: ViewState;
-    settings: any;
+    settings: Settings | null;
     theme: Theme;
     sessionGalleryImages: string[];
     historyIndex: number;
@@ -417,9 +415,16 @@ export interface AppControlContextType {
     isExtraToolsOpen: boolean;
     isImageLayoutModalOpen: boolean;
     isBeforeAfterModalOpen: boolean;
+    beforeAfterImages: [string | null, string | null];
     isLayerComposerMounted: boolean;
     isLayerComposerVisible: boolean;
     language: 'vi' | 'en';
+    modelLibrary: Model[];
+    dressTheModelHistory: string[];
+    addModelToLibrary: (imageDataUrl: string) => void;
+    updateModelInLibrary: (modelId: string, updates: Partial<Omit<Model, 'id' | 'url'>>) => void;
+    deleteModelFromLibrary: (modelId: string) => void;
+    addResultToDressTheModelHistory: (resultUrl: string) => void;
     addImagesToGallery: (newImages: (string | null | undefined)[]) => void;
     removeImageFromGallery: (imageIndex: number) => void;
     replaceImageInGallery: (imageIndex: number, newImageUrl: string) => void;
@@ -441,7 +446,7 @@ export interface AppControlContextType {
     toggleExtraTools: () => void;
     openImageLayoutModal: () => void;
     closeImageLayoutModal: () => void;
-    openBeforeAfterModal: () => void;
+    openBeforeAfterModal: (before?: string, after?: string) => void;
     closeBeforeAfterModal: () => void;
     openLayerComposer: () => void;
     closeLayerComposer: () => void;
@@ -450,3 +455,43 @@ export interface AppControlContextType {
     importSettingsAndNavigate: (settings: any) => void;
     t: (key: string, ...args: any[]) => any;
 }
+
+// Helper function to get initial state for an app
+export const getInitialStateForApp = (viewId: string): AnyAppState => {
+    switch (viewId) {
+        case 'home':
+            return { stage: 'home' };
+        case 'dress-the-model':
+            return { stage: 'idle', modelImage: null, clothingImage: null, generatedImage: null, historicalImages: [], selectedHistoryImage: null, options: { background: '', pose: '', style: '', aspectRatio: 'Giữ nguyên', notes: '', removeWatermark: false, useHistoryReference: true, enhanceQuality: false, faceRestoration: true, upscaleFactor: 'none', denoiseLevel: 0, restoreOldPhoto: false, sharpenLevel: 0 }, error: null };
+        case 'pattern-designer':
+            return { stage: 'idle', clothingImage: null, patternImage: null, patternImage2: null, generatedImage: null, historicalImages: [], options: { applyMode: 'Tự động', aspectRatio: 'Giữ nguyên', patternScale: 1, notes: '', changeObjectColor: false, removeWatermark: false }, error: null };
+        case 'replace-product-in-scene':
+            return { stage: 'idle', modelImage: null, clothingImage: null, generatedImage: null, historicalImages: [], options: { layout: 'Tự động', photoStyle: 'Tự động', aspectRatio: 'Giữ nguyên', notes: '', removeWatermark: false }, error: null };
+        case 'mix-style':
+            return { stage: 'idle', contentImage: null, styleImage: null, generatedImage: null, historicalImages: [], options: { styleStrength: 'Trung bình', notes: '', removeWatermark: false }, finalPrompt: null, error: null };
+        case 'free-generation':
+            return { stage: 'configuring', image1: null, image2: null, generatedImages: [], historicalImages: [], options: { prompt: '', removeWatermark: false, numberOfImages: 1, aspectRatio: 'Giữ nguyên' }, error: null };
+        case 'image-interpolation':
+             return { stage: 'idle', analysisMode: 'general', inputImage: null, outputImage: null, referenceImage: null, generatedPrompt: '', promptSuggestions: '', additionalNotes: '', finalPrompt: null, generatedImage: null, historicalImages: [], options: { removeWatermark: false, aspectRatio: 'Giữ nguyên' }, error: null };
+        case 'ai-upscaler':
+            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { upscaleFactor: '2x', enhancementLevel: 'Tăng cường', notes: '', removeWatermark: false }, error: null };
+        case 'product-studio':
+            return { stage: 'idle', productImage: null, sceneImage: null, generatedImage: null, historicalImages: [], options: { creativityLevel: 'Giữ nguyên nền', notes: '' }, error: null };
+        case 'architecture-ideator':
+            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { context: '', style: '', color: '', lighting: '', notes: '', removeWatermark: false }, error: null };
+        case 'avatar-creator':
+            return { stage: 'idle', uploadedImage: null, generatedImages: {}, selectedIdeas: [], historicalImages: [], options: { additionalPrompt: '', removeWatermark: false, aspectRatio: '1:1' }, error: null };
+        case 'photo-restoration':
+            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { type: 'Chân dung', gender: '', age: '', nationality: 'Việt Nam', notes: '', removeWatermark: false, removeStains: true }, error: null };
+        case 'image-to-real':
+            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { faithfulness: 'Trung bình', notes: '', removeWatermark: false }, error: null };
+        case 'swap-style':
+            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], options: { style: '', styleStrength: 'Trung bình', notes: '', removeWatermark: false }, error: null };
+        case 'toy-model-creator':
+            return { stage: 'idle', uploadedImage: null, generatedImage: null, historicalImages: [], concept: 'desktop_model', options: { aspectRatio: '16:9', notes: '', removeWatermark: false, computerType: '', softwareType: '', boxType: '', background: '', keychainMaterial: '', keychainStyle: '', accompanyingItems: '', deskSurface: '', capsuleColor: '', modelFinish: '', capsuleContents: '', displayLocation: '', miniatureMaterial: '', baseMaterial: '', baseShape: '', lightingStyle: '', pokeballType: '', evolutionDisplay: '', modelStyle: '', modelType: '', blueprintType: '', characterMood: '' }, error: null };
+        case 'nano-banana-editor':
+            return { stage: 'idle', uploadedImage: null, generatedImage: null, generatedText: null, historicalImages: [], options: { prompt: '' }, error: null };
+        default:
+            return { stage: 'home' };
+    }
+};

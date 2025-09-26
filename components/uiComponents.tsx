@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Children } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -198,6 +198,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageChange, upl
 interface ResultsViewProps {
     stage: 'generating' | 'results';
     originalImage: string | null;
+    generatedImage?: string | null;
     onOriginalClick?: () => void;
     children: React.ReactNode;
     actions: React.ReactNode;
@@ -206,9 +207,11 @@ interface ResultsViewProps {
     hasPartialError?: boolean;
 }
 
-export const ResultsView: React.FC<ResultsViewProps> = ({ stage, originalImage, onOriginalClick, children, actions, isMobile, error, hasPartialError }) => {
+export const ResultsView: React.FC<ResultsViewProps> = ({ stage, originalImage, generatedImage, onOriginalClick, children, actions, isMobile, error, hasPartialError }) => {
     const isTotalError = !!error;
-    const { currentView, t } = useAppControls();
+    const { currentView, t, openBeforeAfterModal } = useAppControls();
+    
+    const canCompare = originalImage && generatedImage;
 
     useEffect(() => {
         if (hasPartialError && stage === 'results') {
@@ -315,6 +318,14 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ stage, originalImage, 
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.5, duration: 0.5 }}
                     >
+                        {canCompare && (
+                             <button
+                                className="btn btn-secondary"
+                                onClick={() => openBeforeAfterModal(originalImage!, generatedImage!)}
+                            >
+                                {t('extraTools_beforeAfter')}
+                            </button>
+                        )}
                         <button
                           className="btn btn-secondary"
                           onClick={() => downloadJson({ viewId: currentView.viewId, state: getExportableState(currentView.state) }, `aPix-${currentView.viewId}-settings.json`)}

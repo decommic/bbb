@@ -271,6 +271,7 @@ const ToyModelCreator: React.FC<ToyModelCreatorProps> = (props) => {
         return null;
     };
     
+    // FIX: Moved currentConceptData definition before the return statement.
     const isLoading = appState.stage === 'generating';
     const currentConceptData = CONCEPTS_DATA[appState.concept as keyof typeof CONCEPTS_DATA];
 
@@ -374,7 +375,7 @@ const ToyModelCreator: React.FC<ToyModelCreatorProps> = (props) => {
                     <motion.div className="w-full md:w-auto flex-shrink-0" key="generated-toy" initial={{ opacity: 0, scale: 0.5, y: 100 }} animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }} transition={{ type: 'spring', stiffness: 80, damping: 15, delay: 0.15 }}>
                         <ActionablePolaroidCard
                             type="output"
-                            caption={CONCEPTS_DATA[appState.concept as keyof typeof CONCEPTS_DATA].name} status={isLoading ? 'pending' : (appState.error ? 'error' : 'done')} mediaUrl={appState.generatedImage ?? undefined} error={appState.error ?? undefined}
+                            caption={(currentConceptData as any).name} status={isLoading ? 'pending' : (appState.error ? 'error' : 'done')} mediaUrl={appState.generatedImage ?? undefined} error={appState.error ?? undefined}
                             onImageChange={handleGeneratedImageChange}
                             onRegenerate={handleRegeneration}
                             onGenerateVideoFromPrompt={(prompt) => appState.generatedImage && generateVideo(appState.generatedImage, prompt)}

@@ -16,52 +16,58 @@ interface BeforeAfterModalProps {
 }
 
 const BeforeAfterModal: React.FC<BeforeAfterModalProps> = ({ isOpen, onClose }) => {
-    const { sessionGalleryImages, removeImageFromGallery, replaceImageInGallery, t } = useAppControls();
+    const { sessionGalleryImages, removeImageFromGallery, replaceImageInGallery, t, beforeAfterImages } = useAppControls();
     const { openImageEditor } = useImageEditor();
     const { lightboxIndex, openLightbox, closeLightbox, navigateLightbox } = useLightbox();
 
-    const [beforeImage, setBeforeImage] = useState<string | null>(null);
-    const [afterImage, setAfterImage] = useState<string | null>(null);
+    const [localBeforeImage, setLocalBeforeImage] = useState<string | null>(null);
+    const [localAfterImage, setLocalAfterImage] = useState<string | null>(null);
     const [sliderPosition, setSliderPosition] = useState(50);
+    
+    const isDirectMode = beforeAfterImages[0] && beforeAfterImages[1];
+    const beforeImage = isDirectMode ? beforeAfterImages[0] : localBeforeImage;
+    const afterImage = isDirectMode ? beforeAfterImages[1] : localAfterImage;
 
     useEffect(() => {
         if (!isOpen) {
-            setBeforeImage(null);
-            setAfterImage(null);
+            setLocalBeforeImage(null);
+            setLocalAfterImage(null);
             setSliderPosition(50);
             closeLightbox();
+        } else if (isDirectMode) {
+            setLocalBeforeImage(null);
+            setLocalAfterImage(null);
         }
-    }, [isOpen, closeLightbox]);
+    }, [isOpen, isDirectMode, closeLightbox]);
 
     const handleSelectImage = (url: string) => {
-        if (url === beforeImage || url === afterImage) {
-            // Deselect if clicking the same image again
-            if (url === beforeImage) setBeforeImage(null);
-            if (url === afterImage) setAfterImage(null);
+        if (isDirectMode) return;
+
+        if (url === localBeforeImage || url === localAfterImage) {
+            if (url === localBeforeImage) setLocalBeforeImage(null);
+            if (url === localAfterImage) setLocalAfterImage(null);
             return;
         }
-
-        if (!beforeImage) {
-            setBeforeImage(url);
-        } else if (!afterImage) {
-            setAfterImage(url);
+        if (!localBeforeImage) {
+            setLocalBeforeImage(url);
+        } else if (!localAfterImage) {
+            setLocalAfterImage(url);
         } else {
-            // Cycle through: new selection replaces 'after', old 'after' becomes 'before'
-            setBeforeImage(afterImage);
-            setAfterImage(url);
+            setLocalBeforeImage(localAfterImage);
+            setLocalAfterImage(url);
         }
     };
     
     const clearSelections = () => {
-        setBeforeImage(null);
-        setAfterImage(null);
+        setLocalBeforeImage(null);
+        setLocalAfterImage(null);
     };
 
     const handleDelete = (indexToDelete: number, e: React.MouseEvent) => {
         e.stopPropagation();
         const urlToDelete = sessionGalleryImages[indexToDelete];
-        if (urlToDelete === beforeImage) setBeforeImage(null);
-        if (urlToDelete === afterImage) setAfterImage(null);
+        if (urlToDelete === localBeforeImage) setLocalBeforeImage(null);
+        if (urlToDelete === localAfterImage) setLocalAfterImage(null);
         removeImageFromGallery(indexToDelete);
     };
 
@@ -72,8 +78,8 @@ const BeforeAfterModal: React.FC<BeforeAfterModalProps> = ({ isOpen, onClose }) 
 
         openImageEditor(urlToEdit, (newUrl) => {
             replaceImageInGallery(indexToEdit, newUrl);
-            if (urlToEdit === beforeImage) setBeforeImage(newUrl);
-            if (urlToEdit === afterImage) setAfterImage(newUrl);
+            if (urlToEdit === localBeforeImage) setLocalBeforeImage(newUrl);
+            if (urlToEdit === localAfterImage) setLocalAfterImage(newUrl);
         });
     };
 
@@ -105,7 +111,7 @@ const BeforeAfterModal: React.FC<BeforeAfterModalProps> = ({ isOpen, onClose }) 
                             className="modal-content !max-w-7xl !h-[90vh] flex flex-row !p-0"
                         >
                             {/* Sidebar */}
-                            <aside className="w-2/5 flex flex-col bg-neutral-900/50 p-6 border-r border-white/10">
+                            <aside className={cn("flex-col bg-neutral-900/50 p-6 border-r border-white/10", isDirectMode ? 'hidden' : 'w-2/5 flex')}>
                                 <div className="flex justify-between items-center mb-4 flex-shrink-0">
                                     <h3 className="base-font font-bold text-2xl text-yellow-400">{t('beforeAfter_title')}</h3>
                                     <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors" aria-label="Đóng">
@@ -114,8 +120,8 @@ const BeforeAfterModal: React.FC<BeforeAfterModalProps> = ({ isOpen, onClose }) 
                                 </div>
                                 <div className="flex-grow overflow-y-auto pr-2 -mr-4 before-after-sidebar-grid">
                                     {sessionGalleryImages.map((img, index) => {
-                                        const isSelectedBefore = img === beforeImage;
-                                        const isSelectedAfter = img === afterImage;
+                                        const isSelectedBefore = img === localBeforeImage;
+                                        const isSelectedAfter = img === localAfterImage;
                                         const isSelected = isSelectedBefore || isSelectedAfter;
                                         
                                         return (
@@ -154,27 +160,28 @@ const BeforeAfterModal: React.FC<BeforeAfterModalProps> = ({ isOpen, onClose }) 
                                     })}
                                 </div>
                                 <div className="pt-4 mt-auto border-t border-white/10 flex-shrink-0">
-                                    <button onClick={clearSelections} className="btn btn-secondary w-full" disabled={!beforeImage && !afterImage}>{t('beforeAfter_clear')}</button>
+                                    <button onClick={clearSelections} className="btn btn-secondary w-full" disabled={!localBeforeImage && !localAfterImage}>{t('beforeAfter_clear')}</button>
                                 </div>
                             </aside>
 
                             {/* Main Viewer */}
-                            <main className="flex-1 flex items-center justify-center p-6 bg-neutral-800/30 relative">
+                            <main className={cn("flex items-center justify-center p-6 bg-neutral-800/30 relative", isDirectMode ? 'w-full' : 'flex-1')}>
+                                {isDirectMode && (
+                                    <button onClick={onClose} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 transition-colors text-white" aria-label="Đóng">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                )}
                                 {beforeImage && afterImage ? (
                                     <div className="comparison-container">
-                                        {/* After Image (Bottom Layer) */}
                                         <div className="comparison-image-wrapper">
                                             <img src={afterImage} alt={t('beforeAfter_after')} className="comparison-image" loading="lazy" />
                                              <div className="absolute bottom-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">2: {t('beforeAfter_after')}</div>
                                         </div>
-                                        {/* Before Image (Top Layer, Clipped) */}
                                         <div className="comparison-image-wrapper" style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}>
                                             <img src={beforeImage} alt={t('beforeAfter_before')} className="comparison-image" loading="lazy" />
                                             <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">1: {t('beforeAfter_before')}</div>
                                         </div>
-                                        {/* Slider Handle */}
                                         <div className="comparison-slider-handle" style={{ left: `${sliderPosition}%` }} />
-                                        {/* Range Input */}
                                         <input
                                             type="range"
                                             min="0"
@@ -187,7 +194,7 @@ const BeforeAfterModal: React.FC<BeforeAfterModalProps> = ({ isOpen, onClose }) 
                                     </div>
                                 ) : (
                                     <div className="text-center text-neutral-400">
-                                        <h4 className="text-2xl font-bold">{beforeImage ? t('beforeAfter_selectOneMore') : t('beforeAfter_selectTwo')}</h4>
+                                        <h4 className="text-2xl font-bold">{localBeforeImage ? t('beforeAfter_selectOneMore') : t('beforeAfter_selectTwo')}</h4>
                                     </div>
                                 )}
                             </main>

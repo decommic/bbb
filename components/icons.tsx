@@ -336,6 +336,12 @@ export const DeleteIcon: React.FC<IconProps> = (props) => (
     </svg>
 );
 
+export const StarIcon: React.FC<IconProps> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    </svg>
+);
+
 export const BakeIcon: React.FC<IconProps> = (props) => (
     <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" {...props}>
         <path d="m3.25 7.25-1.5.75 6.25 3.25 6.25-3.25-1.5-.75m-11 3.75 6.25 3.25 6.25-3.25"/>
@@ -392,6 +398,7 @@ export const HiddenIcon: React.FC<IconProps> = (props) => (
     </svg>
 );
 
+{/* FIX: Add missing icons for Layer Composer toolbars */}
 export const AlignLeftIcon: React.FC<IconProps> = (props) => (
     <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path fillRule="evenodd" clipRule="evenodd" d="M4 3C4.55228 3 5 3.44772 5 4V20C5 20.5523 4.55228 21 4 21C3.44772 21 3 20.5523 3 20V4C3 3.44772 3.44772 3 4 3ZM10 15C9.44772 15 9 15.4477 9 16C9 16.5523 9.44772 17 10 17H12C12.5523 17 13 16.5523 13 16C13 15.4477 12.5523 15 12 15H10ZM7 16C7 14.3431 8.34315 13 10 13H12C13.6569 13 15 14.3431 15 16C15 17.6569 13.6569 19 12 19H10C8.34315 19 7 17.6569 7 16ZM9 8C9 7.44772 9.44772 7 10 7H18C18.5523 7 19 7.44772 19 8C19 8.55228 18.5523 9 18 9H10C9.44772 9 9 8.55228 9 8ZM10 5C8.34315 5 7 6.34315 7 8C7 9.65685 8.34315 11 10 11H18C19.6569 11 21 9.65685 21 8C21 6.34315 19.6569 5 18 5H10Z" />
@@ -428,7 +435,7 @@ export const AlignBottomIcon: React.FC<IconProps> = (props) => (
     </svg>
 );
 
-export const DistributeVerticalIcon: React.FC<IconProps> = (props) => (
+export const DistributeHorizontalIcon: React.FC<IconProps> = (props) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path d="M22 3L2 3" strokeLinecap="round"/>
         <path d="M22 21L2 21" strokeLinecap="round"/>
@@ -436,7 +443,7 @@ export const DistributeVerticalIcon: React.FC<IconProps> = (props) => (
     </svg>
 );
 
-export const DistributeHorizontalIcon: React.FC<IconProps> = (props) => (
+export const DistributeVerticalIcon: React.FC<IconProps> = (props) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
         <g transform="rotate(90 12 12)">
             <path d="M22 3L2 3" strokeLinecap="round"/>
@@ -447,18 +454,14 @@ export const DistributeHorizontalIcon: React.FC<IconProps> = (props) => (
 );
 
 export const DistributeHorizontalScaleIcon: React.FC<IconProps> = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <rect x="3" y="6" width="4" height="12" rx="1" />
-        <rect x="9" y="6" width="6" height="12" rx="1" />
-        <rect x="17" y="6" width="4" height="12" rx="1" />
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M3 5H21V7H3V5ZM3 17H21V19H3V17ZM8 9H4V15H8V9ZM14 9H10V15H14V9ZM20 9H16V15H20V9Z" />
     </svg>
 );
 
 export const DistributeVerticalScaleIcon: React.FC<IconProps> = (props) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <rect x="6" y="3" width="12" height="4" rx="1" />
-        <rect x="6" y="9" width="12" height="6" rx="1" />
-        <rect x="6" y="17" width="12" height="4" rx="1" />
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
+        <path d="M5 21V3H7V21H5ZM17 21V3H19V21H17ZM9 8V4H15V8H9ZM9 14V10H15V14H9ZM9 20V16H15V20H9Z" />
     </svg>
 );
 

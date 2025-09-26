@@ -187,7 +187,6 @@ export async function refinePrompt(userPrompt: string, imageDataUrls?: string[])
     try {
         console.log("Attempting to refine prompt...");
         const response = await ai.models.generateContent({
-            // FIX: Use the recommended model 'gemini-2.5-flash' instead of the deprecated 'gemini-1.5-flash'.
             model: 'gemini-2.5-flash',
             contents: { parts },
         });
@@ -236,7 +235,6 @@ export async function analyzePromptForImageGenerationParams(
     try {
         console.log("Analyzing prompt for generation parameters...");
         const response = await ai.models.generateContent({
-            // FIX: Use the recommended model 'gemini-2.5-flash' instead of the deprecated 'gemini-1.5-flash'.
             model: 'gemini-2.5-flash',
             contents: metaPrompt,
             config: {
@@ -319,7 +317,6 @@ export async function refineArchitecturePrompt(userPrompt: string, imageDataUrls
     try {
         console.log("Attempting to refine architecture prompt...");
         const response = await ai.models.generateContent({
-            // FIX: Use the recommended model 'gemini-2.5-flash' instead of the deprecated 'gemini-1.5-flash'.
             model: 'gemini-2.5-flash',
             contents: { parts },
         });
